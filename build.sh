@@ -30,11 +30,13 @@ trap "exitfn" INT
 
 echo -e "\n########Downloading Julia on host#########\n"
 
-if test -d "/opt/julia-1.0.3/"; then
-	echo "Using your current installtion of Julia 1.0.3 in /opt"
-	mkdir -p .tmp
-	cp -rs /opt/julia-1.0.3/ .tmp/ 2> /dev/null
-elif test ! -f ".tmp/julia-1.0.3"; then
+#Not working right now :(, sym links cant be followed via docker COPY https://stackoverflow.com/questions/31881904/docker-follow-symlink-outside-context
+#if test -d "/opt/julia-1.0.3/"; then
+#	echo "Using your current installtion of Julia 1.0.3 in /opt"
+#	mkdir -p .tmp
+#	cp -rs /opt/julia-1.0.3/ .tmp/ 2> /dev/null
+#elif test ! -d ".tmp/julia-1.0.3"; then
+if test ! -d ".tmp/julia-1.0.3"; then
 	mkdir -p .tmp
 	wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
 	mv julia-1.0.3-linux-x86_64.tar.gz .tmp

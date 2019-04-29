@@ -1,0 +1,3 @@
+FROM julia:1.0.3-stretch
+COPY pkgInstallation.jl /tmp/
+RUN julia /tmp/pkgInstallation.jl

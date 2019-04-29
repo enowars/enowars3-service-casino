@@ -1,6 +1,6 @@
-#Casino
+# Casino
 
-##Installation
+## Installation
 
 You need to have docker installed.
 Something like `apt-get install docker.io` should work. Tested with the latest debian rep verison (Docker version 18.09.2, build 6247962).

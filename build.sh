@@ -2,11 +2,13 @@
 echo "#############Script for building the casino docker##################"
 echo -e "If you want to clean extra files use the -clean option.\n\n"
 
+#checks if the script runs as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 
    exit 1
 fi
 
+#cleans the files which are created during the build/installation
 if [[ $1 == clean ]]; then
     echo "Cleaning..."
     rm -rf .tmp
@@ -15,17 +17,14 @@ if [[ $1 == clean ]]; then
     exit 0
 fi
 
-if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
-   exit 1
-fi
-
+#if ctrl+c is used, this removes the unfinished download
 exitfn () {
     trap SIGINT
     rm julia-1.0.3-linux-x86_64.tar.gz
     exit
 }
 
+#traps the ctrl+c command
 trap "exitfn" INT
 
 echo -e "\n########Downloading Julia on host#########\n"
@@ -38,6 +37,7 @@ echo -e "\n########Downloading Julia on host#########\n"
 #elif test ! -d ".tmp/julia-1.0.3"; then
 if test ! -d ".tmp/julia-1.0.3"; then
 	mkdir -p .tmp
+	#download latest julia 1.0.3(lts) version and extract to .tmp
 	wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
 	mv julia-1.0.3-linux-x86_64.tar.gz .tmp
 	cd .tmp

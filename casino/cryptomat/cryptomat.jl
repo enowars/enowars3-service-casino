@@ -21,8 +21,8 @@ printMenu()
 while true
     user_input = readline()
     if ("1" <= user_input <= "5")
-        println("blub")
         sendSecret(parse(Int, user_input))
+        printMenu()
     elseif user_input == "r"
         printMenu()
         continue

@@ -38,7 +38,7 @@ end
 function generate_cryptomaterial()
     #TODO: insert symmetric key here
     cryptomaterial = Array{Array{UInt8,1}, 1}(undef, 2)
-    key = md5("This is the symmetric key. Need to be computed once for each team.")
+    key = md5("Thi is the symmetric key. Need to be computed once for each team.")
     cryptomaterial[2] = rand(UInt8, 16)
     cryptomaterial[1] = vcat(key, md5(cryptomaterial[2]))
     return cryptomaterial
@@ -59,8 +59,15 @@ function sendSecret(mode::Int)
     for cur_message in messages
         println("\n", cur_message)
         enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
-        #print iv if needed
-        full_Msg = [enc_Msg, cryptomaterial[2]]
+        open(".aeskey.json", "w") do f
+            write(f, JSON.json(cryptomaterial[1]))
+        end
+        run(`./rsa.py`)
+        #TODO: check if file exists?
+        f = open(".aeskey_enc.json", "r")
+        enc_key = JSON.parse(read(f, String), inttype=UInt8)
+        close(f)
+        full_Msg = [enc_Msg, cryptomaterial[2], enc_key]
         println("Message:")
         println(JSON.json(full_Msg))
     end

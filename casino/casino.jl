@@ -3,10 +3,12 @@ include("header.jl")
 include("black_jack.jl")
 include("slot_machine.jl")
 include("strings.jl")
+#include("cryptomat/cryptomat.jl")
 
 function gamble(p::Player)
     current_game = ""
     while true
+        printDict("spacer")
         printDict(("gamble", 0))
         printGames()
         printDict(("gamble", 1))
@@ -27,6 +29,7 @@ function gamble(p::Player)
         end
     end
     while true
+        printDict("spacer")
         if current_game == "black_jack"
             play_black_jack(p)
         elseif current_game == "slot_machine"
@@ -54,6 +57,7 @@ function gamble(p::Player)
     end
 end
 function withdraw(p::Player)
+    printDict("spacer")
     printDict(("withdraw", 0))
     s = readline()
     amount = tryparse(Int64, s)
@@ -69,7 +73,34 @@ function withdraw(p::Player)
     end
 end
 
+function bathroom(p::Player)
+    printDict("spacer")
+    printDict(("bathroom",0))
+    s = readline()
+    if s == "w"
+        printDict(("bathroom",1))
+    elseif s == "l"
+        printDict(("bathroom",2))
+    else
+        printDict(("bathroom",3))
+        return
+    end
+
+    printDict(("bathroom", 4))
+
+    s = readline()
+    if s == "v"
+        printDict("spacer")
+        #use_cryptomat()
+    elseif s == "r"
+        p.status = reception
+    end
+
+    printDict(("bathroom", 5))
+end
+
 function receptionDesk(p::Player)
+    printDict("spacer")
     printBalance(p.balance)
     printDict(("reception", 0))
     s = readline()
@@ -79,6 +110,9 @@ function receptionDesk(p::Player)
         p.status = gambling
     elseif s == "w"
         withdraw(p)
+    elseif s == "b"
+        printDict(("reception", 2))
+        bathroom(p)
     elseif s == "l"
         exit(0)
     end
@@ -86,6 +120,7 @@ end
 
 function main()
     p = Player(0,reception)
+    printDict("spacer")
     printDict("welcome")
     while true
         if p.status == reception

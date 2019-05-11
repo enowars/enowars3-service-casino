@@ -23,9 +23,6 @@ WORKDIR /app
 COPY  casino casino
 WORKDIR casino
 
-#clean up everythin what is not intended for the team
-RUN rm assets/aes.seed
-
 #install libs
 RUN julia pkgInstallation.jl
 RUN pip3 install -r requirements.txt

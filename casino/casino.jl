@@ -3,7 +3,7 @@ include("header.jl")
 include("black_jack.jl")
 include("slot_machine.jl")
 include("strings.jl")
-#include("cryptomat/cryptomat.jl")
+include("cryptomat/cryptomat.jl")
 
 function gamble(p::Player)
     current_game = ""
@@ -91,7 +91,7 @@ function bathroom(p::Player)
     s = readline()
     if s == "v"
         printDict("spacer")
-        #use_cryptomat()
+        use_cryptomat()
     elseif s == "r"
         p.status = reception
     end

@@ -22,6 +22,6 @@ enc_key_list = []
 for b in enc_key_bytes:
 	enc_key_list.append(int.from_bytes([b], byteorder='big', signed=False))
 
-print(enc_key_list)
+#print(enc_key_list)
 with open(".aeskey_enc.json", 'w') as enc_file:
 	enc_file.write(json.dumps(enc_key_list))

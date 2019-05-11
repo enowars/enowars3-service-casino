@@ -7,7 +7,7 @@ import json
 with open("assets/private.pem") as aeskey_file:
 	key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
 
-with open("../casino/cryptomat/.aeskey_enc.json") as json_file:
+with open("../service/cryptomat/.aeskey_enc.json") as json_file:
 	data = json.load(json_file)
 
 print(data)

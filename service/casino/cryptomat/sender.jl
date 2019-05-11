@@ -65,7 +65,9 @@ function sendSecret(mode::Int)
         open("cryptomat/.aeskey.json", "w") do f
             write(f, JSON.json(cryptomaterial[1]))
         end
-        run(`cryptomat/rsa.py`)
+	cd("cryptomat")
+        run(`./rsa.py`)
+	cd("..")
         #TODO: check if file exists?
         f = open("cryptomat/.aeskey_enc.json", "r")
         enc_key = JSON.parse(read(f, String), inttype=UInt8)

@@ -9,8 +9,10 @@ Something like `apt-get install docker.io` should work. Tested with the latest d
 ---
 
 The service itself need some packages.
-Install julia-1.0.3 (LTS)
-Run `julia pkgInstallation.jl`
-Also install python package via `pip3 install -r requirements.txt` (virtualenv recommended)
+* Install julia-1.0.3 (LTS)
+* Run `julia pkgInstallation.jl`
+* Also install python package via `pip3 install -r requirements.txt` (virtualenv recommended)
 
+---
+Build everything with `sudo docker build -t julias_casino`
 

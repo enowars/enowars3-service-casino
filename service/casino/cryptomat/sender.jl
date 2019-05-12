@@ -49,18 +49,22 @@ end
 
 
 
-function sendSecret(mode::Int)
+function sendSecret(mode::Int, customMessage::String)
     println("I will now send you the message in the choosen mode.")
 
-    #insert flag here
+	if customMessage == ""
+		#TODO: insert flag here
+		customMessage = "FLAG"
+	end
+
     messages = ["ATOM-BOMB-CODE-START",
-                "FLAG",
+                customMessage,
                 "ATOM-BOMB-CODE-END"]
 
     cryptomaterial = generate_cryptomaterial()
 
     for cur_message in messages
-        #println("\n", cur_message)
+        println("\n", cur_message)
         enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
         open("cryptomat/.aeskey.json", "w") do f
             write(f, JSON.json(cryptomaterial[1]))

@@ -11,8 +11,10 @@ println("""
             [3] AES CTR
             [4] AES ECB
             [5] AES OFB
-            [r] print this message
-            [l] leave
+            [u] Upload message
+            [c] clear message
+            [r] Print this message
+            [l] Leave
         """)
 end
 
@@ -21,11 +23,18 @@ end
 function use_cryptomat()
     printMenu()
 
+    global msg = ""
     while true
         user_input = readline()
         if ("1" <= user_input <= "5")
-            sendSecret(parse(Int, user_input))
+            sendSecret(parse(Int, user_input), msg)
             printMenu()
+        elseif user_input == "u"
+            println("Enter your message:")
+            msg = readline()
+            printMenu()
+        elseif user_input == "c"
+            msg = ""
         elseif user_input == "r"
             printMenu()
             continue

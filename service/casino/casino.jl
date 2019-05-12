@@ -2,6 +2,7 @@ using Random
 include("header.jl")
 include("black_jack.jl")
 include("slot_machine.jl")
+include("roulette.jl")
 include("strings.jl")
 include("cryptomat/cryptomat.jl")
 
@@ -17,10 +18,13 @@ function gamble(p::Player)
             printDict("repeat")
             continue
         elseif current_game == "black_jack"
-            printDict(("black_jack", 0))
+            printDict("dealer")
             break
         elseif current_game == "slot_machine"
             printDict(("slot_machine", 0))
+            break
+        elseif current_game == "roulette"
+            printDict("dealer")
             break
         else
             printDict("irritated")
@@ -34,6 +38,8 @@ function gamble(p::Player)
             play_black_jack(p)
         elseif current_game == "slot_machine"
             play_slot_machine(p)
+        elseif current_game == "roulette"
+            play_roulette(p)
         end
 
         if p.status == reception

@@ -5,6 +5,7 @@ dictionary = Dict(
     "walk" => "You just walk away..",
     "repeat" => "Thinking you did not understand they repeat themself..",
     "irritated" => "People start awkwardly looking at you. After a moment has passed they turn their heads back to their games.. Just another crazy person.",
+    "dealer" => "You approach one of the black_jack tables. The dealer smiles at you, slightly nods his head as a greeting.",
     ("reception", 0) => "Do you want to play a game[g], withdraw money[w] or leave[l]?",
     ("reception", 1) => "The man behind the reception looks slightly irritated and repeats himself..",
     ("reception", 2) => "You want to use the bathroom? No problem, you can find it down the hall to the left.",
@@ -22,9 +23,7 @@ dictionary = Dict(
     ("gamble", 2) => "Do you want to play again? [y/n]",
     ("gamble", 3) => "Alright, see you soon!",
     ("gamble", 4) => "You leave and head back to the reception..",
-    ("black_jack", 0) => "You approach one of the black_jack tables. The dealer smiles at you, slightly nods his head as a greeting.",
     ("slot_machine", 0) => "You join many others mindlessly looking at blinking screens.."
-
 )
 
 function printDict(key)

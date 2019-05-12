@@ -36,6 +36,10 @@ function gamble(p::Player)
             play_slot_machine(p)
         end
 
+        if p.status == reception
+            printDict(("gamble",4))
+            return
+        end
         while true
             printDict(("gamble", 2))
             s = readline()
@@ -101,7 +105,7 @@ end
 
 function receptionDesk(p::Player)
     printDict("spacer")
-    printBalance(p.balance)
+    printBalance(p)
     printDict(("reception", 0))
     s = readline()
     if s == ""

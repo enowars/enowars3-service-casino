@@ -21,7 +21,8 @@ dictionary = Dict(
     ("gamble", 1) => "Just name the game and you can start playing!",
     ("gamble", 2) => "Do you want to play again? [y/n]",
     ("gamble", 3) => "Alright, see you soon!",
-    ("black_jack", 0) => "You approach one of the black_jack tables. The dealer smiles at you, slightly nods his head as a greeting and starts dealing cards.",
+    ("gamble", 4) => "You leave and head back to the reception..",
+    ("black_jack", 0) => "You approach one of the black_jack tables. The dealer smiles at you, slightly nods his head as a greeting.",
     ("slot_machine", 0) => "You join many others mindlessly looking at blinking screens.."
 
 )
@@ -30,8 +31,8 @@ function printDict(key)
     println(dictionary[key])
 end
 
-function printBalance(balance)
-    println("Your balance is: ", balance)
+function printBalance(p::Player)
+    println("Your balance is: ", p.balance)
 end
 
 function printGames()

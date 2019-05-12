@@ -8,6 +8,7 @@ RUN apt install wget -y
 RUN apt install python3 -y
 RUN apt install python3-pip -y
 RUN apt install pwgen -y
+RUN apt install nmap -y
 
 WORKDIR /opt
 RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
@@ -31,3 +32,4 @@ RUN pip3 install -r requirements.txt
 RUN pwgen -s -y -1 64 > assets/aes.seed
 
 #TODO: start the service correctly
+CMD ncat -k -e "./start.sh" -l 6969 

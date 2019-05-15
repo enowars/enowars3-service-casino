@@ -2,8 +2,8 @@ using JSON
 using MD5
 
 
-function formatError()
-    println("You deliviered the wrong format. This incident will be reported.")
+function formatError(incNr)
+    println("You deliviered the wrong format. This incident will be reported. ", incNr)
 end
 
 function updateOS()
@@ -14,46 +14,49 @@ function updateOS()
     try
         new_os = JSON.parse(new_os)
     catch y
-        formatError()
+        formatError(0)
         return
     end
 
-    if !(isa(new_os, Array{Any, 1}) && isa(new_os[1], Array{Any, 1}) && isa(new_os[2], Array{Any, 1}) && length(new_os[2] == 1))
-        formatError()
+    if !(isa(new_os, Array{Any, 1})
+        && length(new_os) == 2
+        && isa(new_os[1], String)
+        && isa(new_os[2], Array{Any, 1}))
+        formatError(1)
         return
     end
 
-    #TODO check length of new_os[1]
-    for a in new_os[1]
-        if !isa(a, String)
-            formatError()
-            return
-        end
-    end
 
     for a in new_os[2]
         if !isa(a, Int)
-            formatError
+            formatError(2)
             return
         end
     end
 
-    #check integrity
-    hash = md5(JSON.json(new_os[1]))
-    signature = JSON.json(new_os[2])
-    open("crptomat/.signature", "w") do f
-        write(f, signature)
+    println("Accepted format")
+    open("cryptomat/.signature.json", "w") do f
+        write(f, JSON.json(new_os))
     end
-    #TODO: python
-    f = open("cryptomat/.hash", "r")
-    sig_hash = JSON.parse(read(f, String))
+    cd("cryptomat")
+        run(`./rsa_sig.py`)
+    cd("..")
+    f = open("cryptomat/.signature.answer", "r")
+    answer = read(f, String)
     close(f)
-    #TODO: convert hashes to the same type
 
-    #TODO: check if hashes are the same
+    println(answer)
+    if answer != "+"
+        println("Not accepting this signature")
+        return
+    end
 
-    #TODO: integrity error if needed
+    println("Signature valid")
 
+    os_string = new_os[1]
+
+    println("Upating...")
+    println(os_string)
     #TODO update accoridng file, if okay
 
 end

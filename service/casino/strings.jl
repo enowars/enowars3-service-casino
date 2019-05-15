@@ -23,6 +23,7 @@ dictionary = Dict(
     ("gamble", 2) => "Do you want to play again? [y/n]",
     ("gamble", 3) => "Alright, see you soon!",
     ("gamble", 4) => "You leave and head back to the reception..",
+    ("table", 0) => "You can choose to join[j] one of the other tables or create[c] a new one.",
     ("slot_machine", 0) => "You join many others mindlessly looking at blinking screens.."
 )
 

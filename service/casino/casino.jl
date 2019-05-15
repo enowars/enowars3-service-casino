@@ -5,6 +5,7 @@ include("slot_machine.jl")
 include("roulette.jl")
 include("strings.jl")
 include("cryptomat/cryptomat.jl")
+include("tables.jl")
 
 function gamble(p::Player)
     current_game = ""
@@ -18,13 +19,13 @@ function gamble(p::Player)
             printDict("repeat")
             continue
         elseif current_game == "black_jack"
-            printDict("dealer")
+            current_game = black_jack
             break
         elseif current_game == "slot_machine"
-            printDict(("slot_machine", 0))
+            current_game = slot_machine
             break
         elseif current_game == "roulette"
-            printDict("dealer")
+            current_game = roulette
             break
         else
             printDict("irritated")
@@ -33,12 +34,33 @@ function gamble(p::Player)
         end
     end
     while true
+        printDict(("table", 0))
+        s = readline()
+        if s == ""
+            printDict("repeat")
+            continue
+        elseif s == "j"
+            if join_table(p, current_game)
+                break
+            end
+        elseif s == "c"
+            if create_table(p, current_game)
+                break
+            end
+        else
+            printDict("irritated")
+            printDict("repeat")
+            continue
+        end
+    end
+
+    while true
         printDict("spacer")
-        if current_game == "black_jack"
+        if current_game == black_jack
             play_black_jack(p)
-        elseif current_game == "slot_machine"
+        elseif current_game == slot_machine
             play_slot_machine(p)
-        elseif current_game == "roulette"
+        elseif current_game == roulette
             play_roulette(p)
         end
 

@@ -1,0 +1,4 @@
+{
+    "table1" : {"name" : "test1", "game" : "black_jack", "minimum" : 5000, "password" : "1"},
+    "table2" : {"name" : "test2", "game" : "black_jack", "minimum" : 8000, "password" : "2"}
+}

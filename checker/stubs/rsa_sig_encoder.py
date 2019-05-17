@@ -27,4 +27,4 @@ def sign_message(msg):
 
 
 
-print(sign_message("TESTFLAG!§$%&/{}"))
+print(sign_message("TESTFLAG6"))

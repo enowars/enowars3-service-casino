@@ -138,6 +138,7 @@ function play_black_jack(p::Player)
         println("Do you want to hit[h] or stand[s]?")
         choice = readline()
     end
+    printDict("spacer")
     println("You decided to stand, the dealer continues their play..")
 
     println("The dealer shows: ", show_cards(dealer_hand))

@@ -53,8 +53,14 @@ function sendSecret(mode::Int, customMessage::String)
     println("I will now send you the message in the choosen mode.")
 
 	if customMessage == ""
-		#TODO: insert flag here
-		customMessage = "FLAG"
+		path = string("data/.bombcode_", dimension)
+		if !(isfile(path))
+			customMessage = string(rand(Int))
+		else
+			f = open(path, "r")
+			customMessage = read(f, String)
+			close(f)
+		end
 	end
 
     messages = ["ATOM-BOMB-CODE-START",
@@ -64,6 +70,7 @@ function sendSecret(mode::Int, customMessage::String)
     cryptomaterial = generate_cryptomaterial()
 
     for cur_message in messages
+		#TODO: uncomment
         #println("\n", cur_message)
         enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
         open("cryptomat/.aeskey.json", "w") do f

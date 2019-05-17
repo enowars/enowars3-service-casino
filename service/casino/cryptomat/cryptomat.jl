@@ -7,11 +7,11 @@ println("""
         Welcome to the Cryptomat!
 
         Choose your mode:
-            [1] AES CBC
-            [2] AES CFB
-            [3] AES CTR
-            [4] AES ECB
-            [5] AES OFB
+            [1 ١] AES CBC
+            [2 ٢] AES CFB
+            [3 ٣] AES CTR
+            [4 ٤] AES ECB
+            [5 ٥] AES OFB
             [u] Upload message
             [c] clear message
             [o] OS update
@@ -24,11 +24,11 @@ end
 
 function use_cryptomat()
     printMenu()
-
+    global note_max_length = 2
     global msg = ""
     while true
         user_input = readline()
-        if ("1" <= user_input <= "5")
+        if ("1" <= user_input <= "5") || ("١" <= user_input <= "٥")
             sendSecret(parse(Int, user_input), msg)
             printMenu()
         elseif user_input == "u"
@@ -42,8 +42,16 @@ function use_cryptomat()
             continue
         elseif user_input == "o"
             updateOS()
+            printMenu()
         elseif user_input == "l"
             break
+        elseif user_input == "🕐"
+            update = readline()
+            try
+                global dimension = parse(Int, update)
+            catch
+                continue
+            end
         else
             println("Invalid input")
         end

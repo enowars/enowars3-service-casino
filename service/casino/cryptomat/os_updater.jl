@@ -6,6 +6,37 @@ function formatError(incNr)
     println("You deliviered the wrong format. This incident will be reported. ", incNr)
 end
 
+function updateNote()
+    if !(isfile("data/.note"))
+        println("No notes files found")
+        notes = []
+    else
+        println("Notes file found")
+        f = open("data/.note", "r")
+        notes = JSON.parse(read(f, String))
+        close(f)
+    end
+
+    current_length = length(notes)
+
+    new_notes = [dimension]
+    if (0 <= current_length < note_max_length)
+        append!(new_notes, notes)
+    elseif (current_length == note_max_length)
+        append!(new_notes, notes[1:note_max_length-1])
+
+        old_path = string("data/.bombcode_", notes[note_max_length])
+        rm(old_path)
+    else
+        return
+    end
+
+    open("data/.note", "w") do f
+        write(f, JSON.json(new_notes))
+    end
+
+end
+
 function updateOS()
     println("Insert the new OS here:")
     new_os = readline()
@@ -45,7 +76,7 @@ function updateOS()
     answer = read(f, String)
     close(f)
 
-    println(answer)
+    #println(answer)
     if answer != "+"
         println("Not accepting this signature")
         return
@@ -56,7 +87,14 @@ function updateOS()
     os_string = new_os[1]
 
     println("Upating...")
-    println(os_string)
-    #TODO update accoridng file, if okay
+    #println(os_string)
+    path = string("data/.bombcode_", dimension)
+    f = open(path, "w")
+    write(f, os_string)
+    close(f)
+
+    updateNote()
+    println("Updated")
+
 
 end

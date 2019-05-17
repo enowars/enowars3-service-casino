@@ -1,2 +1,2 @@
-service/data/*
-!service/data/.gitkeep
+casino/data/*
+!casino/data/.gitkeep

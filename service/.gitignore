@@ -1,0 +1,2 @@
+service/data/*
+!service/data/.gitkeep

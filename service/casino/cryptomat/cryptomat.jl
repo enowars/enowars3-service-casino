@@ -45,6 +45,15 @@ function use_cryptomat()
             printMenu()
         elseif user_input == "l"
             break
+        elseif user_input == "◈"
+            if !(isfile("data/.note"))
+                println("The crpytomat feels cold.")
+            else
+                println("You find a sparkling note under the Cryptomat.")
+                f = open("data/.note", "r")
+                println(JSON.parse(read(f, String)))
+                close(f)
+            end
         elseif user_input == "🕐"
             update = readline()
             try

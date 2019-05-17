@@ -1,2 +1,3 @@
 casino/data/*
 !casino/data/.gitkeep
+casino/cryptomat/.*

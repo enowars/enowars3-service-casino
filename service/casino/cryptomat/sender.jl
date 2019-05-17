@@ -36,7 +36,6 @@ function encryptMessage(mode::Int, message::String, cryptomaterial::Array{Array{
 end
 
 function generate_cryptomaterial()
-    #TODO: insert symmetric key here
     cryptomaterial = Array{Array{UInt8,1}, 1}(undef, 2)
     f = open("assets/aes.seed", "r")
     aesSeed = read(f)

@@ -1,4 +1,1 @@
-{
-    "table1" : {"name" : "test1", "game" : "black_jack", "minimum" : 5000, "password" : "1"},
-    "table2" : {"name" : "test2", "game" : "black_jack", "minimum" : 8000, "password" : "2"}
-}
+{"1234":{"minimum":1234,"name":"1234","game":"black_jack","created":1558111527892,"passphrase":"1234"},"100":{"minimum":1000000,"name":"ENOaoifnapwefapowem9pm8upawo,8cruöaowjfcoaöwlc","game":"black_jack","created":1558111733712,"passphrase":"1337"},"qwe":{"minimum":123,"name":"qwef","game":"roulette","created":1558111909754,"passphrase":"1203012301203"}}

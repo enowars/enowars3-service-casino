@@ -8,8 +8,8 @@ include("cryptomat/cryptomat.jl")
 include("tables.jl")
 
 function gamble(p::Player)
-    current_game = ""
     while true
+        global current_game
         printDict("spacer")
         printDict(("gamble", 0))
         printGames()
@@ -33,7 +33,11 @@ function gamble(p::Player)
             continue
         end
     end
+    printDict("spacer")
     while true
+        if current_game == slot_machine
+            break
+        end
         printDict(("table", 0))
         s = readline()
         if s == ""
@@ -42,11 +46,15 @@ function gamble(p::Player)
         elseif s == "j"
             if join_table(p, current_game)
                 break
+            else
+                printDict(("gamble", 3))
+                p.status = reception
+                return
             end
+
         elseif s == "c"
-            if create_table(p, current_game)
-                break
-            end
+            create_table(p, current_game)
+            continue
         else
             printDict("irritated")
             printDict("repeat")

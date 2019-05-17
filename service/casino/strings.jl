@@ -24,6 +24,21 @@ dictionary = Dict(
     ("gamble", 3) => "Alright, see you soon!",
     ("gamble", 4) => "You leave and head back to the reception..",
     ("table", 0) => "You can choose to join[j] one of the other tables or create[c] a new one.",
+    ("table", 1) => "Following tables are currently open..",
+    ("table", 2) => "At which table do you want to play? Or do you want to leave[l]?",
+    ("table", 3) => "Sorry there is currently no table open that is in your caliber.",
+    ("table", 4) => "Unless you know the secret passphrase for this table, you are not allowed to play at that table..",
+    ("table", 5) => "Sorry, this was not the secret passphrase..",
+    ("table", 6) => "Choose a name for your table..",
+    ("table", 7) => "Sorry that name is too long..",
+    ("table", 8) => "Choose a minimum limit of chips any player at the table should have..",
+    ("table", 9) => "Sorry the minimum should be at least 0 chips..",
+    ("table", 10) => "Choose a passphrase for the table..",
+    ("table", 11) => "Sorry that passphrase is too long..",
+    ("table", 12) => "Choose an identifier for your table..",
+    ("table", 13) => "Sorry that identifier is too long..",
+    ("table", 14) => "Sorry that identifier has already been taken..",
+    ("table", 15) => "You succesfully created a new table!",
     ("slot_machine", 0) => "You join many others mindlessly looking at blinking screens.."
 )
 

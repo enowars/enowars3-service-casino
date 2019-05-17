@@ -64,14 +64,14 @@ function sendSecret(mode::Int, customMessage::String)
     cryptomaterial = generate_cryptomaterial()
 
     for cur_message in messages
-        println("\n", cur_message)
+        #println("\n", cur_message)
         enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
         open("cryptomat/.aeskey.json", "w") do f
             write(f, JSON.json(cryptomaterial[1]))
         end
-	cd("cryptomat")
-        run(`./rsa.py`)
-	cd("..")
+		cd("cryptomat")
+        	run(`./rsa.py`)
+		cd("..")
         #TODO: check if file exists?
         f = open("cryptomat/.aeskey_enc.json", "r")
         enc_key = JSON.parse(read(f, String), inttype=UInt8)

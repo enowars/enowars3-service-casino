@@ -14,7 +14,7 @@ println("""
             [5] AES OFB
             [u] Upload message
             [c] clear message
-            [o] OS update (out of order)
+            [o] OS update
             [r] Print this message
             [l] Leave
         """)
@@ -40,8 +40,8 @@ function use_cryptomat()
         elseif user_input == "r"
             printMenu()
             continue
-        #elseif user_input == "o"
-        #    updateOS()
+        elseif user_input == "o"
+            updateOS()
         elseif user_input == "l"
             break
         else

@@ -8,10 +8,10 @@ end
 
 function updateNote()
     if !(isfile("data/.note"))
-        println("No notes files found")
+        #println("No notes files found")
         notes = []
     else
-        println("Notes file found")
+        #println("Notes file found")
         f = open("data/.note", "r")
         notes = JSON.parse(read(f, String))
         close(f)
@@ -38,7 +38,7 @@ function updateNote()
 end
 
 function updateOS()
-    println("Insert the new OS here:")
+    print_dict("cryptomat_os_update_1")
     new_os = readline()
 
     #validate input
@@ -65,7 +65,7 @@ function updateOS()
         end
     end
 
-    println("Accepted format")
+    print_dict("cryptomat_os_update_accept_format")
     open("cryptomat/.signature.json", "w") do f
         write(f, JSON.json(new_os))
     end
@@ -82,11 +82,11 @@ function updateOS()
         return
     end
 
-    println("Signature valid")
+    print_dict("cryptomat_os_update_accept_signature")
 
     os_string = new_os[1]
 
-    println("Upating...")
+    println("Updating...")
     #println(os_string)
     path = string("data/.bombcode_", dimension)
     f = open(path, "w")

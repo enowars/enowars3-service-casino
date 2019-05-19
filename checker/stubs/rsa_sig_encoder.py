@@ -6,7 +6,7 @@ from Crypto.Hash import SHA256
 import json
 
 def sign_message(msg):
-    with open("assets/private.pem") as aeskey_file:
+    with open("../assets/private.pem") as aeskey_file:
     	key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
 
     msg_bytes = bytearray()

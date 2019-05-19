@@ -10,13 +10,13 @@ include("tables.jl")
 function gamble(p::Player)
     while true
         global current_game
-        printDict("spacer")
-        printDict(("gamble", 0))
+        print_dict("spacer")
+        print_dict("gamble_0")
         printGames()
-        printDict(("gamble", 1))
+        print_dict("gamble_1")
         current_game = readline()
         if current_game == ""
-            printDict("repeat")
+            print_dict("repeat")
             continue
         elseif current_game == "black_jack"
             current_game = black_jack
@@ -28,26 +28,26 @@ function gamble(p::Player)
             current_game = roulette
             break
         else
-            printDict("irritated")
-            printDict("repeat")
+            print_dict("irritated")
+            print_dict("repeat")
             continue
         end
     end
-    printDict("spacer")
+    print_dict("spacer")
     while true
         if current_game == slot_machine
             break
         end
-        printDict(("table", 0))
+        print_dict("table_0")
         s = readline()
         if s == ""
-            printDict("repeat")
+            print_dict("repeat")
             continue
         elseif s == "j"
             if join_table(p, current_game)
                 break
             else
-                printDict(("gamble", 3))
+                print_dict("gamble_3")
                 p.status = reception
                 return
             end
@@ -56,14 +56,14 @@ function gamble(p::Player)
             create_table(p, current_game)
             continue
         else
-            printDict("irritated")
-            printDict("repeat")
+            print_dict("irritated")
+            print_dict("repeat")
             continue
         end
     end
 
     while true
-        printDict("spacer")
+        print_dict("spacer")
         if current_game == black_jack
             play_black_jack(p)
         elseif current_game == slot_machine
@@ -73,85 +73,85 @@ function gamble(p::Player)
         end
 
         if p.status == reception
-            printDict(("gamble",4))
+            print_dict("gamble_4")
             return
         end
         while true
-            printDict(("gamble", 2))
+            print_dict("gamble_2")
             s = readline()
             if s == ""
-                printDict("repeat")
+                print_dict("repeat")
                 continue
             elseif s == "n"
-                printDict(("gamble", 3))
+                print_dict("gamble_3")
                 p.status = reception
                 return
             elseif s == "y"
                 break
             else
-                printDict("irritated")
-                printDict("repeat")
+                print_dict("irritated")
+                print_dict("repeat")
                 continue
             end
         end
     end
 end
 function withdraw(p::Player)
-    printDict("spacer")
-    printDict(("withdraw", 0))
+    print_dict("spacer")
+    print_dict("withdraw_0")
     s = readline()
     amount = tryparse(Int64, s)
     if amount == nothing || amount <= 0
-        printDict(("withdraw", 1))
+        print_dict("withdraw_1")
         return
     end
     p.balance += amount
 
     if p.balance > 10000
-        printDict(("withdraw", 2))
+        print_dict("withdraw_2")
         p.balance = 10000
     end
 end
 
 function bathroom(p::Player)
-    printDict("spacer")
-    printDict(("bathroom",0))
+    print_dict("spacer")
+    print_dict("bathroom_0")
     s = readline()
     if s == "w"
-        printDict(("bathroom",1))
+        print_dict("bathroom_1")
     elseif s == "l"
-        printDict(("bathroom",2))
+        print_dict("bathroom_2")
     else
-        printDict(("bathroom",3))
+        print_dict("bathroom_3")
         return
     end
 
-    printDict(("bathroom", 4))
+    print_dict("bathroom_4")
 
     s = readline()
     if s == "v"
-        printDict("spacer")
+        print_dict("spacer")
         use_cryptomat()
     elseif s == "r"
         p.status = reception
     end
 
-    printDict(("bathroom", 5))
+    print_dict("bathroom_5")
 end
 
 function receptionDesk(p::Player)
-    printDict("spacer")
+    print_dict("spacer")
     printBalance(p)
-    printDict(("reception", 0))
+    print_dict("reception_0")
     s = readline()
     if s == ""
-        printDict(("reception", 1))
+        print_dict("reception_1")
     elseif s == "g"
         p.status = gambling
     elseif s == "w"
         withdraw(p)
     elseif s == "b"
-        printDict(("reception", 2))
+        print_dict("reception_2")
         bathroom(p)
     elseif s == "l"
         exit(0)
@@ -160,8 +160,8 @@ end
 
 function main()
     p = Player(0,reception)
-    printDict("spacer")
-    printDict("welcome")
+    print_dict("spacer")
+    print_dict("welcome")
     while true
         if p.status == reception
             receptionDesk(p)

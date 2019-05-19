@@ -92,7 +92,7 @@ function play_black_jack(p::Player)
 
         bet = tryparse(Int64, s)
         if bet == nothing || bet < 0
-            printDict("repeat")
+            print_dict("repeat")
             continue
         elseif bet > p.balance
             println("I am really sorry but you do not have that many chips left..")
@@ -138,7 +138,7 @@ function play_black_jack(p::Player)
         println("Do you want to hit[h] or stand[s]?")
         choice = readline()
     end
-    printDict("spacer")
+    print_dict("spacer")
     println("You decided to stand, the dealer continues their play..")
 
     println("The dealer shows: ", show_cards(dealer_hand))

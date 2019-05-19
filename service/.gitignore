@@ -1,3 +1,5 @@
 casino/data/*
 !casino/data/.gitkeep
+!casino/data/strings.json
+!casino/data/table_list.json
 casino/cryptomat/.*

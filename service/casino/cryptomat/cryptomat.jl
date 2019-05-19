@@ -1,55 +1,35 @@
 include("sender.jl")
 include("os_updater.jl")
-
-
-function printMenu()
-println("""
-        Welcome to the Cryptomat!
-
-        Choose your mode:
-            [1 ١] AES CBC
-            [2 ٢] AES CFB
-            [3 ٣] AES CTR
-            [4 ٤] AES ECB
-            [5 ٥] AES OFB
-            [u] Upload message
-            [c] clear message
-            [o] OS update
-            [r] Print this message
-            [l] Leave
-        """)
-end
-
-
+include("../strings.jl")
 
 function use_cryptomat()
-    printMenu()
+    print_dict("cryptomat_0")
     global note_max_length = 2
     global msg = ""
     while true
         user_input = readline()
         if ("1" <= user_input <= "5") || ("١" <= user_input <= "٥")
             sendSecret(parse(Int, user_input), msg)
-            printMenu()
+            print_dict("cryptomat_0")
         elseif user_input == "u"
-            println("Enter your message:")
+            print_dict("cryptomat_1")
             msg = readline()
-            printMenu()
+            print_dict("cryptomat_0")
         elseif user_input == "c"
             msg = ""
         elseif user_input == "r"
-            printMenu()
+            print_dict("cryptomat_0")
             continue
         elseif user_input == "o"
             updateOS()
-            printMenu()
+            print_dict("cryptomat_0")
         elseif user_input == "l"
             break
         elseif user_input == "◈"
             if !(isfile("data/.note"))
-                println("The crpytomat feels cold.")
+                print_dict("cryptomat_2")
             else
-                println("You find a sparkling note under the Cryptomat.")
+                print_dict("cryptomat_3")
                 f = open("data/.note", "r")
                 println(JSON.parse(read(f, String)))
                 close(f)
@@ -62,8 +42,8 @@ function use_cryptomat()
                 continue
             end
         else
-            println("Invalid input")
+            print_dict("cryptomat_4")
         end
     end
-    println("Goodbye. Your Cryptomat")
+    print_dict("cryptomat_5")
 end

@@ -23,13 +23,13 @@ function play_roulette(p :: Player)
                 return
             end
         elseif size(lines,1) != 2
-            printDict("repeat")
+            print_dict("repeat")
             continue
         else
             bet = tryparse(Int64, lines[1])
 
             if bet == nothing || bet < 0
-                printDict("repeat")
+                print_dict("repeat")
                 continue
             elseif bet > (p.balance - total_bet)
                 println("I am really sorry but you do not have that many chips left..")
@@ -84,7 +84,7 @@ function play_roulette(p :: Player)
                     total_bet += bet
                     continue
                 else
-                    printDict("repeat")
+                    print_dict("repeat")
                     continue
                 end
             elseif number >= 1 && number <= 36
@@ -97,7 +97,7 @@ function play_roulette(p :: Player)
                 total_bet += bet
                 continue
             else
-                printDict("repeat")
+                print_dict("repeat")
                 continue
             end
 

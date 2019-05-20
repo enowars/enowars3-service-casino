@@ -94,10 +94,10 @@ def rsa_sign_message(msg):
 
 def readline_expect_multiline(telnet_session, msg, pls_print=False):
     for m in msg.split('\n'):
-        if print:
-            print(readline_expect(telnet_session, m))
-        else:
-            readline_expect(telnet_session, m)
+            if print:
+                print(readline_expect(telnet_session, m))
+            else:
+                readline_expect(telnet_session, m)
 
 
 def generate_random_string(length = 3):
@@ -190,8 +190,8 @@ class CasinoChecker(BaseChecker):
                 raise BrokenServiceException
             readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug)
             readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug)
-            readline_expect_multiline(t, "Updating...\n", self.debug)
-            readline_expect_multiline(t, "Updated\n", self.debug)
+            readline_expect_multiline(t, "Updating...", self.debug)
+            readline_expect_multiline(t, "Updated", self.debug)
 
         #TODO: better leaving
         t.close()

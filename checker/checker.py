@@ -70,7 +70,7 @@ def generate_random_string(length = 3):
 
 
 class CasinoChecker(BaseChecker):
-
+    debug = True
 
     def intro(self, t):
         print(readline_expect(t, "Entering..."))
@@ -93,6 +93,13 @@ class CasinoChecker(BaseChecker):
         print(readline_expect(t, self.dictionary["spacer"]))
         readline_expect_multiline(t, self.dictionary["cryptomat_0"], True)
 
+    def goto_games(self, t):
+        t.write("g\n")
+        print(readline_expect(t, self.dictionary["spacer"]))
+        print(readline_expect(t, self.dictionary["gamble_0"], read_until = self.dictionary["gamble_0"][-10:] + "\n"))
+        print(readline_expect(t, "black_jack\nslot_machine\nroulette", read_until = "roulette\n"))
+        print(readline_expect(t, self.dictionary["gamble_1"], read_until = self.dictionary["gamble_1"][-10:] + "\n"))
+        
     with open('../service/casino/data/strings.json', 'r') as f:
         dictionary = json.load(f)
 
@@ -107,11 +114,7 @@ class CasinoChecker(BaseChecker):
             #table-flag
 
             #change to games
-            t.write("g\n")
-            print(readline_expect(t, self.dictionary["spacer"]))
-            print(readline_expect(t, self.dictionary["gamble_0"], read_until = self.dictionary["gamble_0"][-10:] + "\n"))
-            print(readline_expect(t, "black_jack\nslot_machine\nroulette", read_until = "roulette\n"))
-            print(readline_expect(t, self.dictionary["gamble_1"], read_until = self.dictionary["gamble_1"][-10:] + "\n"))
+            goto_games(t)
             #change to black_jack
             t.write("black_jack\n")
             print(readline_expect(t, self.dictionary["spacer"]))

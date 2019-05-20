@@ -3,39 +3,76 @@ import json
 import random
 import string
 import time
+import os
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
+from Crypto.Cipher import AES
 from enochecker import BaseChecker, BrokenServiceException, run
 from enochecker.utils import *
 
 session = requests.Session()
 
+def bytes_arr_to_int_arr(bytes_arr):
+    result = []
+    for b in bytes_arr:
+    	result.append(int.from_bytes([b], byteorder='big', signed=False))
+    return result
+
+def decrypt_aes(key, iv, enc_msg):
+    #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
+    #return aesSuite.decrypt(enc_msg)
+
+
+    with open(".aes_msg_enc","w") as f:
+        f.write(json.dumps([bytes_arr_to_int_arr(key), bytes_arr_to_int_arr(iv), bytes_arr_to_int_arr(enc_msg)]))
+
+    #TODO: subprocess and stdout
+    exit_code = os.system("julia aes_decryptor.jl")
+
+    print(exit_code)
+    if exit_code != 0:
+        raise BrokenServiceException
+
+    with open(".aes_msg", "r") as f:
+        msg = json.loads(f.read())
+
+    return bytes(msg).decode('utf-8').rstrip('\x00')
+
+
 #TODO: change for use in the checker
-def rsa_decoder(enc_msg_json):
+def decode_crypto_msg(enc_msg_json):
+
+    data = json.loads(enc_msg_json)
+
+    #convert int list to bytes
+    enc_msg_aes = bytes(data[0])
+    iv = bytes(data[1])
+    enc_aes_key = bytes(data[2])
+
+    print("Encrypted AES msg:", enc_msg_aes)
+    print("IV:", iv)
+    print("Encrypted AES key:", enc_aes_key)
+
+    #TODO: validate input
+    aes_key = rsa_decode(enc_aes_key)
+
+    decoded_msg = decrypt_aes(aes_key, iv, enc_msg_aes)
+
+    return decoded_msg
+
+def rsa_decode(enc_aes_key):
     with open("assets/private.pem") as aeskey_file:
     	key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
 
-    data = json.load(enc_msg_json)
-
-    print("Data:" , data)
-    #convert int list to bytes
-    enc_msg_aes = bytes(data[0])
-    enc_aes_key = bytes(data[1])
-
     cipher_rsa = PKCS1_OAEP.new(key)
+    #TODO: try - invalid input?
     enc_key_bytes = cipher_rsa.decrypt(enc_aes_key)
-    #TODO:
 
-    enc_key_list = []
-    #convert back to int list
+    return enc_key_bytes
 
-    for b in enc_key_bytes:
-    	enc_key_list.append(int.from_bytes([b], byteorder='big', signed=False))
-
-    print(enc_key_list)
 
 def rsa_sign_message(msg):
     with open("assets/private.pem") as aeskey_file:
@@ -138,21 +175,51 @@ class CasinoChecker(BaseChecker):
             print(readline_expect(t, "Updating...\n"))
             print(readline_expect(t, "Updated\n"))
 
-
-        self.close(t)
+        #TODO: better leaving
+        t.close()
 
     def getflag(self):
         t = self.connect()
         self.debug("connected to {}".format(self.address))
-        self.intro()
+        self.intro(t)
 
         if self. flag_idx == 0:
             pass
         elif self.flag_idx == 1:
             self.goto_cryptomat(t)
-            t.write("")
+            #get note
+            t.write("◈\n".encode("utf-8"))
+            #retrieve correct dimension
+            print(readline_expect(t, self.dictionary["cryptomat_3"]))
+            r = t.read_until("\n")[:-1]
+            notes = json.loads(r.decode('utf-8'))
+            #TODO: adjust to round
+            dimension = notes[0]
+            #set dimension
+            t.write("🕐\n".encode("utf-8"))
+            t.write(str(dimension)+"\n")
 
-        self.close(t)
+            t.write("3\n")
+
+            print(readline_expect(t, self.dictionary["cryptomat_sender_1"]))
+
+            for i in range(0,3):
+                print(readline_expect(t, "AES CTR:\n"))
+                print(readline_expect(t, "Message:\n"))
+                msg = t.read_until("\n")[:-1].decode('utf-8')
+
+                decrypted_msg = decode_crypto_msg(msg)
+                print("Decrypted message: ", decrypted_msg)
+                if i == 0:
+                    assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
+                elif i == 1:
+                    assert_equals(decrypted_msg , self.flag, autobyteify=True)
+                elif i == 2:
+
+                    assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+
+        #todo: better leaving
+        t.close()
 
 
     def putnoise(self):

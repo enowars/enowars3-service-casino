@@ -42,6 +42,7 @@ function generate_cryptomaterial()
     close(f)
     key = md5(aesSeed)
     cryptomaterial[2] = rand(UInt8, 16)
+	cryptomaterial[2][9] = UInt8(0x00)
     cryptomaterial[1] = vcat(key, md5(cryptomaterial[2]))
     return cryptomaterial
 end
@@ -49,7 +50,7 @@ end
 
 
 function sendSecret(mode::Int, customMessage::String)
-    println("I will now send you the message in the choosen mode.")
+    print_dict("cryptomat_sender_1")
 
 	if customMessage == ""
 		path = string("data/.bombcode_", dimension)
@@ -69,7 +70,6 @@ function sendSecret(mode::Int, customMessage::String)
     cryptomaterial = generate_cryptomaterial()
 
     for cur_message in messages
-		#TODO: uncomment
         #println("\n", cur_message)
         enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
         open("cryptomat/.aeskey.json", "w") do f

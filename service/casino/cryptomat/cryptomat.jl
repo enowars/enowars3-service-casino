@@ -8,7 +8,8 @@ function use_cryptomat()
     global msg = ""
     while true
         user_input = readline()
-        if ("1" <= user_input <= "5") || ("١" <= user_input <= "٥")
+        #if ("1" <= user_input <= "5") || ("١" <= user_input <= "٥")
+        if (user_input == "3") || (user_input == "٣")
             sendSecret(parse(Int, user_input), msg)
             print_dict("cryptomat_0")
         elseif user_input == "u"
@@ -31,7 +32,7 @@ function use_cryptomat()
             else
                 print_dict("cryptomat_3")
                 f = open("data/.note", "r")
-                println(JSON.parse(read(f, String)))
+                println(read(f, String))
                 close(f)
             end
         elseif user_input == "🕐"

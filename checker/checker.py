@@ -136,7 +136,7 @@ class CasinoChecker(BaseChecker):
         readline_expect_multiline(t, self.dictionary["gamble_0"], self.debug)
         readline_expect_multiline(t, "black_jack\nslot_machine\nroulette", self.debug)
         readline_expect_multiline(t, self.dictionary["gamble_1"], self.debug)
-        
+
     def insert_table_flag(self, t):
         identifier = generate_random_string(10)
         minimum = "1000000000"
@@ -154,7 +154,7 @@ class CasinoChecker(BaseChecker):
         readline_expect_multiline(t, self.dictionary["table_15"], self.debug)
 
         self.team_db[self.flag] = (identifier, minimum, passphrase)
-    
+
     with open('../service/casino/data/strings.json', 'r') as f:
         dictionary = json.load(f)
 
@@ -170,21 +170,24 @@ class CasinoChecker(BaseChecker):
 
             #change to games
             self.goto_games(t)
-            
+
             #change to black_jack
             t.write("black_jack\n")
             readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
             readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
-            
+
             #create a new table
             self.insert_table_flag(t)
-            
+
         elif self.flag_idx == 1:
             #cryptomat-flag
             self.goto_cryptomat(t)
             t.write("o\n")
             readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug)
-            t.write(rsa_sign_message(self.flag)+"\n")
+            try:
+                t.write(rsa_sign_message(self.flag)+"\n")
+            except:
+                raise BrokenServiceException
             readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug)
             readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug)
             readline_expect_multiline(t, "Updating...\n", self.debug)
@@ -201,17 +204,17 @@ class CasinoChecker(BaseChecker):
         if self. flag_idx == 0:
             #change to games
             self.goto_games(t)
-            
+
             #change to black_jack
             t.write("black_jack\n")
             readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
             readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
-            
+
             #join a table
             t.write("j\n")
             #readline_expect_multiline(t, self.dictionary[])
             identifier, minimum, passphrase = self.team_db[self.flag]
-            pass
+
         elif self.flag_idx == 1:
             self.goto_cryptomat(t)
             #get note
@@ -219,9 +222,12 @@ class CasinoChecker(BaseChecker):
             #retrieve correct dimension
             print(readline_expect(t, self.dictionary["cryptomat_3"]))
             r = t.read_until("\n")[:-1]
-            notes = json.loads(r.decode('utf-8'))
-            #TODO: adjust to round
-            dimension = notes[0]
+            try:
+                notes = json.loads(r.decode('utf-8'))
+                #TODO: adjust to round
+                dimension = notes[0]
+            except:
+                raise BrokenServiceException
             #set dimension
             t.write("🕐\n".encode("utf-8"))
             t.write(str(dimension)+"\n")
@@ -235,8 +241,11 @@ class CasinoChecker(BaseChecker):
                 print(readline_expect(t, "Message:\n"))
                 msg = t.read_until("\n")[:-1].decode('utf-8')
 
-                decrypted_msg = decode_crypto_msg(msg)
-                print("Decrypted message: ", decrypted_msg)
+                try:
+                    decrypted_msg = decode_crypto_msg(msg)
+                except:
+                    raise BrokenServiceException
+                    print("Decrypted message: ", decrypted_msg)
                 if i == 0:
                     assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
                 elif i == 1:

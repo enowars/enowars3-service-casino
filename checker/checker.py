@@ -18,7 +18,7 @@ session = requests.Session()
 def bytes_arr_to_int_arr(bytes_arr):
     result = []
     for b in bytes_arr:
-    	result.append(int.from_bytes([b], byteorder='big', signed=False))
+        result.append(int.from_bytes([b], byteorder='big', signed=False))
     return result
 
 def decrypt_aes(key, iv, enc_msg):
@@ -65,7 +65,7 @@ def decode_crypto_msg(enc_msg_json):
 
 def rsa_decode(enc_aes_key):
     with open("assets/private.pem") as aeskey_file:
-    	key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
+        key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
 
     cipher_rsa = PKCS1_OAEP.new(key)
     #TODO: try - invalid input?
@@ -76,7 +76,7 @@ def rsa_decode(enc_aes_key):
 
 def rsa_sign_message(msg):
     with open("assets/private.pem") as aeskey_file:
-    	key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
+        key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
 
     msg_bytes = bytearray()
     msg_bytes.extend(map(ord, msg))
@@ -161,102 +161,126 @@ class CasinoChecker(BaseChecker):
     port = 6969  # default port to send requests to.
 
     def putflag(self):
-        t = self.connect()
-        self.debug("connected to {}".format(self.address))
-        self.intro(t)
+        try:
+            t = self.connect()
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
 
-        if self.flag_idx == 0:
-            #table-flag
+            if self.flag_idx == 0:
+                #table-flag
 
-            #change to games
-            self.goto_games(t)
+                #change to games
+                self.goto_games(t)
 
-            #change to black_jack
-            t.write("black_jack\n")
-            readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-            readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
+                #change to black_jack
+                t.write("black_jack\n")
+                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
+                readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
 
-            #create a new table
-            self.insert_table_flag(t)
+                #create a new table
+                self.insert_table_flag(t)
 
-        elif self.flag_idx == 1:
-            #cryptomat-flag
-            self.goto_cryptomat(t)
-            t.write("o\n")
-            readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug)
-            try:
-                t.write(rsa_sign_message(self.flag)+"\n")
-            except:
-                raise BrokenServiceException
-            readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug)
-            readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug)
-            readline_expect_multiline(t, "Updating...", self.debug)
-            readline_expect_multiline(t, "Updated", self.debug)
-
-        #TODO: better leaving
-        t.close()
-
-    def getflag(self):
-        t = self.connect()
-        self.debug("connected to {}".format(self.address))
-        self.intro(t)
-
-        if self. flag_idx == 0:
-            #change to games
-            self.goto_games(t)
-
-            #change to black_jack
-            t.write("black_jack\n")
-            readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-            readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
-
-            #join a table
-            t.write("j\n")
-            #readline_expect_multiline(t, self.dictionary[])
-            identifier, minimum, passphrase = self.team_db[self.flag]
-
-        elif self.flag_idx == 1:
-            self.goto_cryptomat(t)
-            #get note
-            t.write("◈\n".encode("utf-8"))
-            #retrieve correct dimension
-            print(readline_expect(t, self.dictionary["cryptomat_3"]))
-            r = t.read_until("\n")[:-1]
-            try:
-                notes = json.loads(r.decode('utf-8'))
-                #TODO: adjust to round
-                dimension = notes[0]
-            except:
-                raise BrokenServiceException
-            #set dimension
-            t.write("🕐\n".encode("utf-8"))
-            t.write(str(dimension)+"\n")
-
-            t.write("3\n")
-
-            print(readline_expect(t, self.dictionary["cryptomat_sender_1"]))
-
-            for i in range(0,3):
-                print(readline_expect(t, "AES CTR:\n"))
-                print(readline_expect(t, "Message:\n"))
-                msg = t.read_until("\n")[:-1].decode('utf-8')
-
+            elif self.flag_idx == 1:
+                #cryptomat-flag
+                self.goto_cryptomat(t)
+                t.write("o\n")
+                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug)
                 try:
-                    decrypted_msg = decode_crypto_msg(msg)
+                    t.write(rsa_sign_message(self.flag)+"\n")
                 except:
                     raise BrokenServiceException
-                    print("Decrypted message: ", decrypted_msg)
-                if i == 0:
-                    assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
-                elif i == 1:
-                    assert_equals(decrypted_msg , self.flag, autobyteify=True)
-                elif i == 2:
+                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug)
+                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug)
+                readline_expect_multiline(t, "Updating...", self.debug)
+                readline_expect_multiline(t, "Updated", self.debug)
 
-                    assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+            #TODO: better leaving
+            t.close()
+        except:
+            raise BrokenServiceException("putflag didnt work")
 
-        #todo: better leaving
-        t.close()
+    def getflag(self):
+        try:
+            t = self.connect()
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
 
+            if self. flag_idx == 0:
+                #change to games
+                self.goto_games(t)
+
+                #change to black_jack
+                t.write("black_jack\n")
+                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
+                readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
+
+                #join a table
+                t.write("j\n")
+                #readline_expect_multiline(t, self.dictionary[])
+                identifier, minimum, passphrase = self.team_db[self.flag]
+
+                t.read_until(self.dictionary["table_2"] + "\n")
+                t.write(identifier + "\n")
+                readline_expect_multiline(t, self.dictionary["table_4"], self.debug)
+                t.write(passphrase + "\n")
+                readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.", self.debug)
+                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
+                readline_expect_multiline(t, "How much are you willing to bet?", self.debug)
+                readline_expect_multiline(t, "Your balance is: 0", self.debug)
+                t.write("0\n")
+
+                readline_expect_multiline(t, "Sorry but this is not a childs game. You can leave now.", self.debug)
+                readline_expect_multiline(t, self.dictionary["gamble_4"], self.debug)
+                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
+                readline_expect_multiline(t, "Your balance is: 0", self.debug)
+                readline_expect_multiline(t, self.dictionary["reception_0"], self.debug)
+
+                t.write("l\n")
+
+
+            elif self.flag_idx == 1:
+                self.goto_cryptomat(t)
+                #get note
+                t.write("◈\n".encode("utf-8"))
+                #retrieve correct dimension
+                print(readline_expect(t, self.dictionary["cryptomat_3"]))
+                r = t.read_until("\n")[:-1]
+                try:
+                    notes = json.loads(r.decode('utf-8'))
+                    #TODO: adjust to round
+                    dimension = notes[0]
+                except:
+                    raise BrokenServiceException
+                #set dimension
+                t.write("🕐\n".encode("utf-8"))
+                t.write(str(dimension)+"\n")
+
+                t.write("3\n")
+
+                print(readline_expect(t, self.dictionary["cryptomat_sender_1"]))
+
+                for i in range(0,3):
+                    print(readline_expect(t, "AES CTR:\n"))
+                    print(readline_expect(t, "Message:\n"))
+                    msg = t.read_until("\n")[:-1].decode('utf-8')
+
+                    try:
+                        decrypted_msg = decode_crypto_msg(msg)
+                    except:
+                        raise BrokenServiceException
+                        print("Decrypted message: ", decrypted_msg)
+                    if i == 0:
+                        assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
+                    elif i == 1:
+                        assert_equals(decrypted_msg , self.flag, autobyteify=True)
+                    elif i == 2:
+
+                        assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+
+            #todo: better leaving
+            t.close()
+        except:
+            raise BrokenServiceException("getflag did not work!")
 
     def putnoise(self):
         pass

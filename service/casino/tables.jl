@@ -3,9 +3,14 @@ include("strings.jl")
 include("header.jl")
 
 function update_table_list()
-    table_list = open("data/table_list.json", "r") do f
-        s = read(f, String)
-        table_list = JSON.parse(s)
+    global table_list
+    try
+        table_list = open("data/table_list.json", "r") do f
+            s = read(f, String)
+            table_list = JSON.parse(s)
+        end
+    catch
+        table_list = Dict()
     end
     for key in keys(table_list)
         table = table_list[key]
@@ -21,9 +26,14 @@ function update_table_list()
     return table_list
 end
 function get_table_list(p::Player, g::Game)
-    table_list = open("data/table_list.json", "r") do f
-        s = read(f, String)
-        table_list = JSON.parse(s)
+    global table_list
+    try
+        table_list = open("data/table_list.json", "r") do f
+            s = read(f, String)
+            table_list = JSON.parse(s)
+        end
+    catch
+        table_list = Dict()
     end
     for key in keys(table_list)
         table = table_list[key]

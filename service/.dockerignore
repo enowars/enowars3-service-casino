@@ -3,5 +3,3 @@ casino/assets/aes.seed
 casino/cryptomat/.aeskey.json
 casino/cryptomat/.aeskey_enc.json
 .dockerignore
-casino/data
-data_persistent/*

@@ -6,4 +6,4 @@ services:
     ports:
       - "6969:6969"
     volumes:
-      - ./data_persistent:/app/casino/data
+      - ./casino/data:/app/casino/data

@@ -21,7 +21,7 @@ RUN ln -s /opt/julia-1.0.3/bin/julia /usr/bin/julia
 
 #copy our pkgInstallation script, install busybox for it and run it
 WORKDIR /app
-COPY  casino casino
+COPY casino casino
 WORKDIR casino
 
 #install libs

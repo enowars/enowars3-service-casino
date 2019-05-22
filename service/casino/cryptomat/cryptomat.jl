@@ -4,7 +4,7 @@ include("../strings.jl")
 
 function use_cryptomat()
     print_dict("cryptomat_0")
-    global note_max_length = 2
+    global note_max_length = 10
     global msg = ""
     while true
         user_input = readline()

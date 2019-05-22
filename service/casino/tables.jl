@@ -95,7 +95,7 @@ function create_table(p::Player, g::Game)
     while true
         global key
         key = readline()
-        if length(key) > 10
+        if length(key) > 30
             print_dict("table_13")
             continue
         elseif haskey(table_list,key)

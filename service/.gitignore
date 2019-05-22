@@ -2,3 +2,4 @@ casino/data/*
 !casino/data/.gitkeep
 !casino/data/strings.json
 casino/cryptomat/.*
+data_persistent/table_list.json

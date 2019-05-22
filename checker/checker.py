@@ -138,8 +138,8 @@ class CasinoChecker(BaseChecker):
         readline_expect_multiline(t, self.dictionary["gamble_1"], self.debug)
 
     def insert_table_flag(self, t):
-        identifier = generate_random_string(10)
-        minimum = "1000000000"
+        identifier = generate_random_string(20)
+        minimum = "1000000000000000000"
         passphrase = generate_random_string(20)
 
         t.write("c\n")

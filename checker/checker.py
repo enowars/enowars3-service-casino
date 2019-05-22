@@ -155,7 +155,7 @@ class CasinoChecker(BaseChecker):
 
         self.team_db[self.flag] = (identifier, minimum, passphrase)
 
-    with open('../service/casino/data/strings.json', 'r') as f:
+    with open('assets/strings.json', 'r') as f:
         dictionary = json.load(f)
 
     port = 6969  # default port to send requests to.
@@ -195,6 +195,7 @@ class CasinoChecker(BaseChecker):
                 readline_expect_multiline(t, "Updated", self.debug)
 
             #TODO: better leaving
+            print(self.flag_round)
             t.close()
         except:
             raise BrokenServiceException("putflag didnt work")
@@ -248,7 +249,8 @@ class CasinoChecker(BaseChecker):
                 try:
                     notes = json.loads(r.decode('utf-8'))
                     #TODO: adjust to round
-                    dimension = notes[0]
+                    difference = self.round - self.flag_round
+                    dimension = notes[difference]
                 except:
                     raise BrokenServiceException
                 #set dimension

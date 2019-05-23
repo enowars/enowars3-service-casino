@@ -92,12 +92,6 @@ def rsa_sign_message(msg):
     #print(enc_key_list)
     return json.dumps([msg,hash_list])
 
-def readline_expect_multiline(telnet_session, msg, pls_print=False):
-    for m in msg.split('\n'):
-            if print:
-                print(readline_expect(telnet_session, m))
-            else:
-                readline_expect(telnet_session, m)
 
 
 def generate_random_string(length = 3):
@@ -107,35 +101,45 @@ def generate_random_string(length = 3):
 
 
 class CasinoChecker(BaseChecker):
-    debug = True
+    debug_print = True
+
+    def readline_expect_multiline(self, telnet_session, msg, pls_print=False):
+        for m in msg.split('\n'):
+            if print:
+                tmp = readline_expect(telnet_session, m)
+                print(tmp)
+                self.debug(tmp)
+            else:
+                readline_expect(telnet_session, m)
+
 
     def intro(self, t):
-        readline_expect_multiline(t, "Entering...", self.debug)
-        readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-        readline_expect_multiline(t, self.dictionary["welcome"], self.debug)
-        readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-        readline_expect_multiline(t, "Your balance is: 0", self.debug)
-        readline_expect_multiline(t, self.dictionary["reception_0"], self.debug)
+        self.readline_expect_multiline(t, "Entering...", self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["welcome"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+        self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["reception_0"], self.debug_print)
 
 
     def goto_cryptomat(self, t):
         t.write("b\n")
-        readline_expect_multiline(t, self.dictionary["reception_2"], self.debug)
-        readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-        readline_expect_multiline(t, self.dictionary["bathroom_0"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["reception_2"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["bathroom_0"], self.debug_print)
         t.write("w\n")
-        readline_expect_multiline(t, self.dictionary["bathroom_1"], self.debug)
-        readline_expect_multiline(t, self.dictionary["bathroom_4"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["bathroom_1"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["bathroom_4"], self.debug_print)
         t.write("v\n")
-        readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-        readline_expect_multiline(t, self.dictionary["cryptomat_0"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["cryptomat_0"], self.debug_print)
 
     def goto_games(self, t):
         t.write("g\n")
-        readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-        readline_expect_multiline(t, self.dictionary["gamble_0"], self.debug)
-        readline_expect_multiline(t, "black_jack\nslot_machine\nroulette", self.debug)
-        readline_expect_multiline(t, self.dictionary["gamble_1"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["gamble_0"], self.debug_print)
+        self.readline_expect_multiline(t, "black_jack\nslot_machine\nroulette", self.debug_print)
+        self.readline_expect_multiline(t, self.dictionary["gamble_1"], self.debug_print)
 
     def insert_table_flag(self, t):
         identifier = generate_random_string(20)
@@ -143,15 +147,15 @@ class CasinoChecker(BaseChecker):
         passphrase = generate_random_string(20)
 
         t.write("c\n")
-        readline_expect_multiline(t, self.dictionary["table_12"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["table_12"], self.debug_print)
         t.write(identifier + "\n")
-        readline_expect_multiline(t, self.dictionary["table_6"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["table_6"], self.debug_print)
         t.write(self.flag + "\n")
-        readline_expect_multiline(t, self.dictionary["table_8"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["table_8"], self.debug_print)
         t.write(minimum + "\n")
-        readline_expect_multiline(t, self.dictionary["table_10"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["table_10"], self.debug_print)
         t.write(passphrase + "\n")
-        readline_expect_multiline(t, self.dictionary["table_15"], self.debug)
+        self.readline_expect_multiline(t, self.dictionary["table_15"], self.debug_print)
 
         self.team_db[self.flag] = (identifier, minimum, passphrase)
 
@@ -174,8 +178,8 @@ class CasinoChecker(BaseChecker):
 
                 #change to black_jack
                 t.write("black_jack\n")
-                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-                readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
+                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["table_0"], self.debug_print)
 
                 #create a new table
                 self.insert_table_flag(t)
@@ -184,15 +188,15 @@ class CasinoChecker(BaseChecker):
                 #cryptomat-flag
                 self.goto_cryptomat(t)
                 t.write("o\n")
-                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug)
+                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug_print)
                 try:
                     t.write(rsa_sign_message(self.flag)+"\n")
                 except:
                     raise BrokenServiceException
-                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug)
-                readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug)
-                readline_expect_multiline(t, "Updating...", self.debug)
-                readline_expect_multiline(t, "Updated", self.debug)
+                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug_print)
+                self.readline_expect_multiline(t, "Updating...", self.debug_print)
+                self.readline_expect_multiline(t, "Updated", self.debug_print)
 
             #TODO: better leaving
             print(self.flag_round)
@@ -212,29 +216,29 @@ class CasinoChecker(BaseChecker):
 
                 #change to black_jack
                 t.write("black_jack\n")
-                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-                readline_expect_multiline(t, self.dictionary["table_0"], self.debug)
+                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["table_0"], self.debug_print)
 
                 #join a table
                 t.write("j\n")
-                #readline_expect_multiline(t, self.dictionary[])
+                #self.readline_expect_multiline(t, self.dictionary[])
                 identifier, minimum, passphrase = self.team_db[self.flag]
 
                 t.read_until(self.dictionary["table_2"] + "\n")
                 t.write(identifier + "\n")
-                readline_expect_multiline(t, self.dictionary["table_4"], self.debug)
+                self.readline_expect_multiline(t, self.dictionary["table_4"], self.debug_print)
                 t.write(passphrase + "\n")
-                readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.", self.debug)
-                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-                readline_expect_multiline(t, "How much are you willing to bet?", self.debug)
-                readline_expect_multiline(t, "Your balance is: 0", self.debug)
+                self.readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.", self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+                self.readline_expect_multiline(t, "How much are you willing to bet?", self.debug_print)
+                self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
                 t.write("0\n")
 
-                readline_expect_multiline(t, "Sorry but this is not a childs game. You can leave now.", self.debug)
-                readline_expect_multiline(t, self.dictionary["gamble_4"], self.debug)
-                readline_expect_multiline(t, self.dictionary["spacer"], self.debug)
-                readline_expect_multiline(t, "Your balance is: 0", self.debug)
-                readline_expect_multiline(t, self.dictionary["reception_0"], self.debug)
+                self.readline_expect_multiline(t, "Sorry but this is not a childs game. You can leave now.", self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["gamble_4"], self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
+                self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
+                self.readline_expect_multiline(t, self.dictionary["reception_0"], self.debug_print)
 
                 t.write("l\n")
 

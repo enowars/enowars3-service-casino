@@ -27,6 +27,7 @@ WORKDIR casino
 #install libs
 RUN julia pkgInstallation.jl
 RUN pip3 install -r requirements.txt
+RUN chmod u+x start.sh
 
 #generate the aes.seed randomly
 RUN pwgen -s -y -1 64 > assets/aes.seed

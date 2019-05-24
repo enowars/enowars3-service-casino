@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import requests
 import json
 import random
@@ -13,7 +15,7 @@ from Crypto.Cipher import AES
 from enochecker import BaseChecker, BrokenServiceException, run
 from enochecker.utils import *
 
-session = requests.Session()
+#session = requests.Session()
 
 def bytes_arr_to_int_arr(bytes_arr):
     result = []
@@ -33,8 +35,9 @@ def decrypt_aes(key, iv, enc_msg):
     exit_code = os.system("julia aes_decryptor.jl")
 
     print(exit_code)
+    self.debug("Julia Exit code:{}".format(exit_code))
     if exit_code != 0:
-        raise BrokenServiceException
+        raise BrokenServiceException("Julia call didn't exit correctly")
 
     with open(".aes_msg", "r") as f:
         msg = json.loads(f.read())
@@ -103,43 +106,43 @@ def generate_random_string(length = 3):
 class CasinoChecker(BaseChecker):
     debug_print = True
 
-    def readline_expect_multiline(self, telnet_session, msg, pls_print=False):
+    def readline_expect_multiline(self, telnet_session, msg):
         for m in msg.split('\n'):
-            if print:
-                tmp = readline_expect(telnet_session, m)
+            if self.debug_print:
+                tmp = telnet_session.readline_expect(m)
                 print(tmp)
                 self.debug(tmp)
             else:
-                readline_expect(telnet_session, m)
+                telnet_session.readline_expect(m)
 
 
     def intro(self, t):
         t.read_until("Entering...")
-        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["welcome"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-        self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["reception_0"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["welcome"])
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, "Your balance is: 0")
+        self.readline_expect_multiline(t, string_dictionary["reception_0"])
 
 
     def goto_cryptomat(self, t):
         t.write("b\n")
-        self.readline_expect_multiline(t, self.dictionary["reception_2"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["bathroom_0"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["reception_2"])
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["bathroom_0"])
         t.write("w\n")
-        self.readline_expect_multiline(t, self.dictionary["bathroom_1"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["bathroom_4"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["bathroom_1"])
+        self.readline_expect_multiline(t, string_dictionary["bathroom_4"])
         t.write("v\n")
-        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["cryptomat_0"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_0"])
 
     def goto_games(self, t):
         t.write("g\n")
-        self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["gamble_0"], self.debug_print)
-        self.readline_expect_multiline(t, "black_jack\nslot_machine\nroulette", self.debug_print)
-        self.readline_expect_multiline(t, self.dictionary["gamble_1"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["gamble_0"])
+        self.readline_expect_multiline(t, "black_jack\nslot_machine\nroulette")
+        self.readline_expect_multiline(t, string_dictionary["gamble_1"])
 
     def insert_table_flag(self, t):
         identifier = generate_random_string(20)
@@ -147,26 +150,28 @@ class CasinoChecker(BaseChecker):
         passphrase = generate_random_string(20)
 
         t.write("c\n")
-        self.readline_expect_multiline(t, self.dictionary["table_12"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["table_12"])
         t.write(identifier + "\n")
-        self.readline_expect_multiline(t, self.dictionary["table_6"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["table_6"])
         t.write(self.flag + "\n")
-        self.readline_expect_multiline(t, self.dictionary["table_8"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["table_8"])
         t.write(minimum + "\n")
-        self.readline_expect_multiline(t, self.dictionary["table_10"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["table_10"])
         t.write(passphrase + "\n")
-        self.readline_expect_multiline(t, self.dictionary["table_15"], self.debug_print)
+        self.readline_expect_multiline(t, string_dictionary["table_15"])
 
         self.team_db[self.flag] = (identifier, minimum, passphrase)
 
-    with open('assets/strings.json', 'r') as f:
-        dictionary = json.load(f)
 
     port = 6969  # default port to send requests to.
 
     def putflag(self):
         try:
-            t = self.connect()
+            try:
+                t = self.connect()
+            except Exception as e:
+                self.debug(e)
+                raise BrokenServiceException("putflag did not work while trying to connect ~ checker author fault DAR+HAS!")
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
@@ -178,8 +183,8 @@ class CasinoChecker(BaseChecker):
 
                 #change to black_jack
                 t.write("black_jack\n")
-                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["table_0"], self.debug_print)
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, string_dictionary["table_0"])
 
                 #create a new table
                 self.insert_table_flag(t)
@@ -188,57 +193,61 @@ class CasinoChecker(BaseChecker):
                 #cryptomat-flag
                 self.goto_cryptomat(t)
                 t.write("o\n")
-                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_1"], self.debug_print)
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_1"])
                 try:
                     t.write(rsa_sign_message(self.flag)+"\n")
                 except:
-                    raise BrokenServiceException
-                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_format"], self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["cryptomat_os_update_accept_signature"], self.debug_print)
-                self.readline_expect_multiline(t, "Updating...", self.debug_print)
-                self.readline_expect_multiline(t, "Updated", self.debug_print)
+                    raise BrokenServiceException("rsa error")
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_format"])
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_signature"])
+                self.readline_expect_multiline(t, "Updating...")
+                self.readline_expect_multiline(t, "Updated")
 
             #TODO: better leaving
-            print(self.flag_round)
+            #print(self.flag_round)
             t.close()
         except:
             raise BrokenServiceException("putflag didnt work")
 
     def getflag(self):
         try:
-            t = self.connect()
+            try:
+                t = self.connect()
+            except Exception as e:
+                self.debug(e)
+                raise BrokenServiceException("getflag did not work while trying to connect ~ checker author fault DAR+HAS!")
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
-            if self. flag_idx == 0:
+            if self.flag_idx == 0:
                 #change to games
                 self.goto_games(t)
 
                 #change to black_jack
                 t.write("black_jack\n")
-                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["table_0"], self.debug_print)
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, string_dictionary["table_0"])
 
                 #join a table
                 t.write("j\n")
-                #self.readline_expect_multiline(t, self.dictionary[])
+                #self.readline_expect_multiline(t, string_dictionary[])
                 identifier, minimum, passphrase = self.team_db[self.flag]
 
-                t.read_until(self.dictionary["table_2"] + "\n")
+                t.read_until(string_dictionary["table_2"] + "\n")
                 t.write(identifier + "\n")
-                self.readline_expect_multiline(t, self.dictionary["table_4"], self.debug_print)
+                self.readline_expect_multiline(t, string_dictionary["table_4"])
                 t.write(passphrase + "\n")
-                self.readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.", self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-                self.readline_expect_multiline(t, "How much are you willing to bet?", self.debug_print)
-                self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
+                self.readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.")
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "How much are you willing to bet?")
+                self.readline_expect_multiline(t, "Your balance is: 0")
                 t.write("0\n")
 
-                self.readline_expect_multiline(t, "Sorry but this is not a childs game. You can leave now.", self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["gamble_4"], self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
-                self.readline_expect_multiline(t, "Your balance is: 0", self.debug_print)
-                self.readline_expect_multiline(t, self.dictionary["reception_0"], self.debug_print)
+                self.readline_expect_multiline(t, "Sorry but this is not a childs game. You can leave now.")
+                self.readline_expect_multiline(t, string_dictionary["gamble_4"])
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: 0")
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
 
                 t.write("l\n")
 
@@ -248,7 +257,7 @@ class CasinoChecker(BaseChecker):
                 #get note
                 t.write("◈\n".encode("utf-8"))
                 #retrieve correct dimension
-                print(readline_expect(t, self.dictionary["cryptomat_3"]))
+                print(t.readline_expect(string_dictionary["cryptomat_3"]))
                 r = t.read_until("\n")[:-1]
                 try:
                     notes = json.loads(r.decode('utf-8'))
@@ -256,37 +265,38 @@ class CasinoChecker(BaseChecker):
                     difference = self.round - self.flag_round
                     dimension = notes[difference]
                 except:
-                    raise BrokenServiceException
+                    raise BrokenServiceException("Notes Error")
                 #set dimension
                 t.write("🕐\n".encode("utf-8"))
                 t.write(str(dimension)+"\n")
 
                 t.write("3\n")
 
-                print(readline_expect(t, self.dictionary["cryptomat_sender_1"]))
+                print(self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"]))
 
                 for i in range(0,3):
-                    print(readline_expect(t, "AES CTR:\n"))
-                    print(readline_expect(t, "Message:\n"))
+                    print(t.readline_expect("AES CTR:\n"))
+                    print(t.readline_expect("Message:\n"))
                     msg = t.read_until("\n")[:-1].decode('utf-8')
 
                     try:
                         decrypted_msg = decode_crypto_msg(msg)
                     except:
-                        raise BrokenServiceException
+                        raise BrokenServiceException("decrypting of message failed")
                         print("Decrypted message: ", decrypted_msg)
                     if i == 0:
                         assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
                     elif i == 1:
                         assert_equals(decrypted_msg , self.flag, autobyteify=True)
                     elif i == 2:
-
                         assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
 
             #todo: better leaving
             t.close()
-        except:
-            raise BrokenServiceException("getflag did not work!")
+        except Exception as e:
+            self.debug("PRRRROOOOOOF")
+            self.debug(e)
+            raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
 
     def putnoise(self):
         pass
@@ -297,6 +307,8 @@ class CasinoChecker(BaseChecker):
     def havoc(self):
         pass
 
+with open('assets/strings.json', 'r') as f:
+    string_dictionary = json.load(f)
 
 app = CasinoChecker.service
 if __name__ == "__main__":

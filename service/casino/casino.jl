@@ -1,4 +1,5 @@
 using Random
+using Sockets
 include("header.jl")
 include("black_jack.jl")
 include("slot_machine.jl")
@@ -10,13 +11,13 @@ include("tables.jl")
 function gamble(p::Player)
     while true
         global current_game
-        print_dict("spacer")
-        print_dict("gamble_0")
-        printGames()
-        print_dict("gamble_1")
-        current_game = readline()
+        print_dict(p, "spacer")
+        print_dict(p, "gamble_0")
+        printGames(p)
+        print_dict(p, "gamble_1")
+        current_game = readline(p.socket)
         if current_game == ""
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         elseif current_game == "black_jack"
             current_game = black_jack
@@ -28,26 +29,26 @@ function gamble(p::Player)
             current_game = roulette
             break
         else
-            print_dict("irritated")
-            print_dict("repeat")
+            print_dict(p, "irritated")
+            print_dict(p, "repeat")
             continue
         end
     end
-    print_dict("spacer")
+    print_dict(p, "spacer")
     while true
         if current_game == slot_machine
             break
         end
-        print_dict("table_0")
-        s = readline()
+        print_dict(p, "table_0")
+        s = readline(p.socket)
         if s == ""
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         elseif s == "j"
             if join_table(p, current_game)
                 break
             else
-                print_dict("gamble_3")
+                print_dict(p, "gamble_3")
                 p.status = reception
                 return
             end
@@ -56,14 +57,14 @@ function gamble(p::Player)
             create_table(p, current_game)
             continue
         else
-            print_dict("irritated")
-            print_dict("repeat")
+            print_dict(p, "irritated")
+            print_dict(p, "repeat")
             continue
         end
     end
 
     while true
-        print_dict("spacer")
+        print_dict(p, "spacer")
         if current_game == black_jack
             play_black_jack(p)
         elseif current_game == slot_machine
@@ -73,95 +74,95 @@ function gamble(p::Player)
         end
 
         if p.status == reception
-            print_dict("gamble_4")
+            print_dict(p, "gamble_4")
             return
         end
         while true
-            print_dict("gamble_2")
-            s = readline()
+            print_dict(p, "gamble_2")
+            s = readline(p.socket)
             if s == ""
-                print_dict("repeat")
+                print_dict(p, "repeat")
                 continue
             elseif s == "n"
-                print_dict("gamble_3")
+                print_dict(p, "gamble_3")
                 p.status = reception
                 return
             elseif s == "y"
                 break
             else
-                print_dict("irritated")
-                print_dict("repeat")
+                print_dict(p, "irritated")
+                print_dict(p, "repeat")
                 continue
             end
         end
     end
 end
 function withdraw(p::Player)
-    print_dict("spacer")
-    print_dict("withdraw_0")
-    s = readline()
+    print_dict(p, "spacer")
+    print_dict(p, "withdraw_0")
+    s = readline(p.socket)
     amount = tryparse(Int64, s)
     if amount == nothing || amount <= 0
-        print_dict("withdraw_1")
+        print_dict(p, "withdraw_1")
         return
     end
     p.balance += amount
 
     if p.balance > 10000
-        print_dict("withdraw_2")
+        print_dict(p, "withdraw_2")
         p.balance = 10000
     end
 end
 
 function bathroom(p::Player)
-    print_dict("spacer")
-    print_dict("bathroom_0")
-    s = readline()
+    print_dict(p, "spacer")
+    print_dict(p, "bathroom_0")
+    s = readline(p.socket)
     if s == "w"
-        print_dict("bathroom_1")
+        print_dict(p, "bathroom_1")
     elseif s == "l"
-        print_dict("bathroom_2")
+        print_dict(p, "bathroom_2")
     else
-        print_dict("bathroom_3")
+        print_dict(p, "bathroom_3")
         return
     end
 
-    print_dict("bathroom_4")
+    print_dict(p, "bathroom_4")
 
-    s = readline()
+    s = readline(p.socket)
     if s == "v"
-        print_dict("spacer")
-        use_cryptomat()
+        print_dict(p, "spacer")
+        use_cryptomat(p)
     elseif s == "r"
         p.status = reception
     end
 
-    print_dict("bathroom_5")
+    print_dict(p, "bathroom_5")
 end
 
 function receptionDesk(p::Player)
-    print_dict("spacer")
+    print_dict(p, "spacer")
     printBalance(p)
-    print_dict("reception_0")
-    s = readline()
+    print_dict(p, "reception_0")
+    s = readline(p.socket)
     if s == ""
-        print_dict("reception_1")
+        print_dict(p, "reception_1")
     elseif s == "g"
         p.status = gambling
     elseif s == "w"
         withdraw(p)
     elseif s == "b"
-        print_dict("reception_2")
+        print_dict(p, "reception_2")
         bathroom(p)
     elseif s == "l"
-        exit(0)
+        close(p.socket)
     end
 end
 
-function main()
-    p = Player(0,reception)
-    print_dict("spacer")
-    print_dict("welcome")
+function main(socket)
+    p = Player(0, reception, socket, rand(Int), "")
+    print_dict(p, "spacer")
+    print_dict(p, "welcome")
     while true
         if p.status == reception
             receptionDesk(p)
@@ -172,5 +173,15 @@ function main()
 end
 ####################################
 ####################################
-global dimension = rand(Int)
-main()
+
+server = listen(6969)
+while true
+    socket = accept(server)
+    @async begin
+        try
+            main(socket)
+        catch err
+            print("connection ended with $err")
+        end
+    end
+end

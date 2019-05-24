@@ -9,7 +9,7 @@ function padMessage(message)
     return vcat(message, fill_zeros)
 end
 
-function encryptMessage(mode::Int, message::String, cryptomaterial::Array{Array{UInt8,1},1})
+function encryptMessage(p::Player, mode::Int, message::String, cryptomaterial::Array{Array{UInt8,1},1})
     message = Array{UInt8, 1}(message)
     #println("Prepad message: ", message)
     #println("Prepad message length: ", length(message))
@@ -17,19 +17,19 @@ function encryptMessage(mode::Int, message::String, cryptomaterial::Array{Array{
     #println("Postpad message: ", message)
     #println("Postpad message length: ", length(message))
     if mode == 1
-        println("AES CBC:")
+        write(p.socket, "AES CBC:\n")
         AESCBC(message, cryptomaterial[1], cryptomaterial[2], true)
     elseif mode == 2
-        println("AES CFB:")
+        write(p.socket, "AES CFB:\n")
         AESCFB(message, cryptomaterial[1], cryptomaterial[2], true)
     elseif mode == 3
-        println("AES CTR:")
+        write(p.socket, "AES CTR:\n")
         AESCTR(message, cryptomaterial[1], cryptomaterial[2])
     elseif mode == 4
-        println("AES ECB:")
+        write(p.socket, "AES ECB:\n")
         AESECB(message, cryptomaterial[1], true)
     else
-        println("AES OFB:")
+        write(p.socket, "AES OFB:\n")
         AESOFB(message, cryptomaterial[1], cryptomaterial[2])
     end
 
@@ -49,11 +49,11 @@ end
 
 
 
-function sendSecret(mode::Int, customMessage::String)
-    print_dict("cryptomat_sender_1")
+function sendSecret(p::Player, mode::Int, customMessage::String)
+    print_dict(p, "cryptomat_sender_1")
 
 	if customMessage == ""
-		path = string("data/.bombcode_", dimension)
+		path = string("data/.bombcode_", p.dimension)
 		if !(isfile(path))
 			customMessage = string(rand(Int))
 		else
@@ -71,7 +71,7 @@ function sendSecret(mode::Int, customMessage::String)
 
     for cur_message in messages
         #println("\n", cur_message)
-        enc_Msg = encryptMessage(mode, cur_message, cryptomaterial)
+        enc_Msg = encryptMessage(p, mode, cur_message, cryptomaterial)
         open("cryptomat/.aeskey.json", "w") do f
             write(f, JSON.json(cryptomaterial[1]))
         end
@@ -83,10 +83,9 @@ function sendSecret(mode::Int, customMessage::String)
         enc_key = JSON.parse(read(f, String), inttype=UInt8)
         close(f)
         full_Msg = [enc_Msg, cryptomaterial[2], enc_key]
-        println("Message:")
-        println(JSON.json(full_Msg))
+        write(p.socket, "Message:\n$(JSON.json(full_Msg))\n")
     end
 
-    println("Sending finished")
+    write(p.socket, "Sending finished\n")
 
 end

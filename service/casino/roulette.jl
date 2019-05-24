@@ -1,3 +1,4 @@
+using Sockets
 include("header.jl")
 include("strings.jl")
 
@@ -5,12 +6,12 @@ function play_roulette(p :: Player)
     result = rand(1:36)
     total_bet = 0
     winnings = 0
-    println("Place your bets!")
+    write(p.socket, "Place your bets!\n")
     printBalance(p)
-    println("""As you have no idea what you should do you wait for others to place their bets..\nSome old lady says: "100 red" and the dealer responds 100 chips on red.\nSomeone else says: "1500 13-24" and the dealer responds 1500 chips on the numbers from 13 to 24.""")
+    write(p.socket, """As you have no idea what you should do you wait for others to place their bets..\nSome old lady says: "100 red" and the dealer responds 100 chips on red.\nSomeone else says: "1500 13-24" and the dealer responds 1500 chips on the numbers from 13 to 24.\n""")
     while true
-        println("Place your bets or tell me when you are done[d]..")
-        s = readline()
+        write(p.socket, "Place your bets or tell me when you are done[d]..\n")
+        s = readline(p.socket)
         lines = split(s)
         if s == ""
             continue
@@ -18,24 +19,24 @@ function play_roulette(p :: Player)
             if total_bet > 0
                 break
             else
-                println("Sorry but this is not a childs game. You can leave now.")
+                write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
                 p.status = reception
                 return
             end
         elseif size(lines,1) != 2
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         else
             bet = tryparse(Int64, lines[1])
 
             if bet == nothing || bet < 0
-                print_dict("repeat")
+                print_dict(p, "repeat")
                 continue
             elseif bet > (p.balance - total_bet)
-                println("I am really sorry but you do not have that many chips left..")
+                write(p.socket, "I am really sorry but you do not have that many chips left..\n")
                 continue
             elseif bet == 0
-                println("Sorry but this is not a childs game. You can leave now.")
+                write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
                 p.status = reception
                 return
             end
@@ -84,7 +85,7 @@ function play_roulette(p :: Player)
                     total_bet += bet
                     continue
                 else
-                    print_dict("repeat")
+                    print_dict(p, "repeat")
                     continue
                 end
             elseif number >= 1 && number <= 36
@@ -97,7 +98,7 @@ function play_roulette(p :: Player)
                 total_bet += bet
                 continue
             else
-                print_dict("repeat")
+                print_dict(p, "repeat")
                 continue
             end
 
@@ -105,9 +106,9 @@ function play_roulette(p :: Player)
         end
     end
 
-    println("The ball starts jumping up and down in the wheel, you tremble with excitement..")
-    println("After a few rotations the ball stays in a slot..")
-    println("Congratulations the number is.. ", result, ". Your total winnings are: ", winnings)
+    write(p.socket, "The ball starts jumping up and down in the wheel, you tremble with excitement..\n")
+    write(p.socket, "After a few rotations the ball stays in a slot..\n")
+    write(p.socket, "Congratulations the number is.. $result. Your total winnings are: $winnings\n")
 
     p.balance += winnings
 end

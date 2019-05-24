@@ -1,4 +1,5 @@
 import JSON
+using Sockets
 include("strings.jl")
 include("header.jl")
 
@@ -50,38 +51,41 @@ function join_table(p::Player, g::Game)
     table_list = update_table_list()
     visible_tables = get_table_list(p,g)
     if size(collect(keys(visible_tables)),1) == 0
-        print_dict("table_3")
+        print_dict(p, "table_3")
     else
-        print_dict("table_1")
+        print_dict(p, "table_1")
+        key_output = ""
         for key in keys(visible_tables)
-            println(key)
+
+            key_output *= "$key\n"
         end
+        write(p.socket, key_output)
     end
     while true
-        print_dict("table_2")
-        s = readline()
+        print_dict(p, "table_2")
+        s = readline(p.socket)
         if s == ""
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         elseif s == "l"
             return false
         elseif haskey(visible_tables, s)
             table = visible_tables[s]
-            println("You approach the ", g," table ", table["name"],". The dealer smiles at you and slightly nods his head as a greeting.")
+            write(p.socket, "You approach the $g table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
             break
         elseif haskey(table_list, s) && table_list[s]["game"] == string(g)
-            print_dict("table_4")
+            print_dict(p, "table_4")
             table = table_list[s]
-            s = readline()
+            s = readline(p.socket)
             if table["passphrase"] == s
-                println("You approach the ", g," table ", table["name"],". The dealer smiles at you and slightly nods his head as a greeting.")
+                write(p.socket, "You approach the $g table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
                 break;
             else
-                print_dict("table_5")
+                print_dict(p, "table_5")
                 continue
             end
         else
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         end
     end
@@ -91,51 +95,51 @@ end
 function create_table(p::Player, g::Game)
     table_list = update_table_list()
 
-    print_dict("table_12")
+    print_dict(p, "table_12")
     while true
         global key
-        key = readline()
+        key = readline(p.socket)
         if length(key) > 30
-            print_dict("table_13")
+            print_dict(p, "table_13")
             continue
         elseif haskey(table_list,key)
-            print_dict("table_14")
+            print_dict(p, "table_14")
             continue
         else
             break
         end
     end
 
-    print_dict("table_6")
+    print_dict(p, "table_6")
     while true
         global name
-        name = readline()
+        name = readline(p.socket)
 
         if length(name) > 64
-            print_dict("table_7")
+            print_dict(p, "table_7")
             continue
         else
             break
         end
     end
-    print_dict("table_8")
+    print_dict(p, "table_8")
     while true
         global minimum
-        s = readline()
+        s = readline(p.socket)
         minimum = tryparse(Int, s)
         if minimum == nothing || minimum < 1
-            print_dict("table_9")
+            print_dict(p, "table_9")
             continue
         else
             break
         end
     end
-    print_dict("table_10")
+    print_dict(p, "table_10")
     while true
         global passphrase
-        passphrase = readline()
+        passphrase = readline(p.socket)
         if length(passphrase) > 24
-            print_dict("table_11")
+            print_dict(p, "table_11")
         else
             break
         end
@@ -148,6 +152,6 @@ function create_table(p::Player, g::Game)
         write(f, s)
     end
 
-    print_dict("table_15")
-    print_dict("spacer")
+    print_dict(p, "table_15")
+    print_dict(p, "spacer")
 end

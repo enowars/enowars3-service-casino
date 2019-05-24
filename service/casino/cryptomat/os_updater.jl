@@ -1,12 +1,13 @@
 using JSON
 using MD5
+using Sockets
 
 
-function formatError(incNr)
-    println("You deliviered the wrong format. This incident will be reported. ", incNr)
+function formatError(p, incNr)
+    write(p.socket, "You deliviered the wrong format. This incident will be reported. $incNr\n")
 end
 
-function updateNote()
+function updateNote(p::Player)
     if !(isfile("data/.note"))
         #println("No notes files found")
         notes = []
@@ -19,7 +20,7 @@ function updateNote()
 
     current_length = length(notes)
 
-    new_notes = [dimension]
+    new_notes = [p.dimension]
     if (0 <= current_length < note_max_length)
         append!(new_notes, notes)
     elseif (current_length == note_max_length)
@@ -37,15 +38,15 @@ function updateNote()
 
 end
 
-function updateOS()
-    print_dict("cryptomat_os_update_1")
-    new_os = readline()
+function updateOS(p::Player)
+    print_dict(p, "cryptomat_os_update_1")
+    new_os = readline(p.socket)
 
     #validate input
     try
         new_os = JSON.parse(new_os)
     catch y
-        formatError(0)
+        formatError(p, 0)
         return
     end
 
@@ -53,19 +54,19 @@ function updateOS()
         && length(new_os) == 2
         && isa(new_os[1], String)
         && isa(new_os[2], Array{Any, 1}))
-        formatError(1)
+        formatError(p, 1)
         return
     end
 
 
     for a in new_os[2]
         if !isa(a, Int)
-            formatError(2)
+            formatError(p, 2)
             return
         end
     end
 
-    print_dict("cryptomat_os_update_accept_format")
+    print_dict(p, "cryptomat_os_update_accept_format")
     open("cryptomat/.signature.json", "w") do f
         write(f, JSON.json(new_os))
     end
@@ -78,23 +79,23 @@ function updateOS()
 
     #println(answer)
     if answer != "+"
-        println("Not accepting this signature")
+        write(p.socket, "Not accepting this signature\n")
         return
     end
 
-    print_dict("cryptomat_os_update_accept_signature")
+    print_dict(p, "cryptomat_os_update_accept_signature")
 
     os_string = new_os[1]
 
-    println("Updating...")
+    write(p.socket, "Updating...\n")
     #println(os_string)
-    path = string("data/.bombcode_", dimension)
+    path = string("data/.bombcode_", p.dimension)
     f = open(path, "w")
     write(f, os_string)
     close(f)
 
-    updateNote()
-    println("Updated")
+    updateNote(p)
+    write(p.socket, "Updated\n")
 
 
 end

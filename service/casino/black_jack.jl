@@ -1,4 +1,6 @@
+using Sockets
 include("strings.jl")
+
 function total_value(hand)
     total = 0
     aces = 0
@@ -53,14 +55,14 @@ function natural(p :: Player, bet, dealer_hand, player_hand)
 
     if size(player_hand,1) == 2 && size(dealer_hand,1) == 2
         if player_total == 21 && dealer_total == 21
-            println("Both you and the dealer have a black_jack! Congratulations!")
+            write(p.socket, "Both you and the dealer have a black_jack! Congratulations!\n")
             return true
         elseif player_total == 21
-            println("You have a black_jack! Congratulations!")
+            write(p.socket, "You have a black_jack! Congratulations!\n")
             p.balance += bet ÷ 2
             return true
         elseif dealer_total == 21
-            println("The dealer has a black_jack! Better luck next time!")
+            write(p.socket, "The dealer has a black_jack! Better luck next time!\n")
             p.balance -= bet
             return true
         end
@@ -73,32 +75,32 @@ function evaluate(p :: Player, bet, dealer_hand, player_hand)
     player_total = total_value(player_hand)
 
     if dealer_total > player_total
-        println("The dealer wins with ", show_cards(dealer_hand), " against your ", show_cards(player_hand), ". Better luck next time!")
+        write(p.socket, "The dealer wins with $(show_cards(dealer_hand)) against your $(show_cards(player_hand)). Better luck next time!\n")
         p.balance -= bet
     elseif dealer_total < player_total
-        println("You win with ", show_cards(player_hand), " against the dealers ", show_cards(dealer_hand), ". Congratulations!")
+        write(p.socket, "You win with $(show_cards(player_hand)) against the dealers $(show_cards(dealer_hand)). Congratulations!\n")
         p.balance += bet
     else
-        println("A standoff! The dealers ", show_cards(dealer_hand), " against your ", show_cards(player_hand), ".")
+        write(p.socket, "A standoff! The dealers $(show_cards(dealer_hand)) against your $(show_cards(player_hand)).\n")
     end
 end
 
 function play_black_jack(p::Player)
     bet = 0
     while true
-        println("How much are you willing to bet?")
+        write(p.socket, "How much are you willing to bet?\n")
         printBalance(p)
-        s = readline()
+        s = readline(p.socket)
 
         bet = tryparse(Int64, s)
         if bet == nothing || bet < 0
-            print_dict("repeat")
+            print_dict(p, "repeat")
             continue
         elseif bet > p.balance
-            println("I am really sorry but you do not have that many chips left..")
+            write(p.socket, "I am really sorry but you do not have that many chips left..\n")
             continue
         elseif bet == 0
-            println("Sorry but this is not a childs game. You can leave now.")
+            write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
             p.status = reception
             return
         else
@@ -112,43 +114,43 @@ function play_black_jack(p::Player)
     dealer_hand = [pop!(deck), pop!(deck)]
     player_hand = [pop!(deck), pop!(deck)]
 
-    println("The dealer shows: ", show_cards(dealer_hand, false), ".")
-    println("You hold: ",show_cards(player_hand), ".")
+    write(p.socket, "The dealer shows: $(show_cards(dealer_hand, false)).\n")
+    write(p.socket, "You hold: $(show_cards(player_hand)).\n")
 
     if natural(p, bet, dealer_hand, player_hand)
         return
     end
 
     choice = "s"
-    println("Do you want to hit[h] or stand[s]?")
-    choice = readline()
+    write(p.socket, "Do you want to hit[h] or stand[s]?\n")
+    choice = readline(p.socket)
     while choice != "s"
         if choice == "h"
             hit(player_hand, deck)
-            println("You now hold: ",show_cards(player_hand))
+            write(p.socket, "You now hold: $(show_cards(player_hand))\n")
             if(total_value(player_hand) > 21)
-                println("You busted.. Better luck next time!")
+                write(p.socket, "You busted.. Better luck next time!\n")
                 p.balance -= bet
                 return
             end
         else
-            println("Pardon me, could you repeat that please?")
+            write(p.socket, "Pardon me, could you repeat that please?\n")
         end
 
-        println("Do you want to hit[h] or stand[s]?")
-        choice = readline()
+        write(p.socket, "Do you want to hit[h] or stand[s]?\n")
+        choice = readline(p.socket)
     end
-    print_dict("spacer")
-    println("You decided to stand, the dealer continues their play..")
+    print_dict(p, "spacer")
+    write(p.socket, "You decided to stand, the dealer continues their play..\n")
 
-    println("The dealer shows: ", show_cards(dealer_hand))
+    write(p.socket, "The dealer shows: $(show_cards(dealer_hand))\n")
     dealer_total = total_value(dealer_hand)
     while dealer_total < 17
         hit(dealer_hand, deck)
-        println("The dealer shows: ", show_cards(dealer_hand))
+        write(p.socket, "The dealer shows: $(show_cards(dealer_hand))\n")
         dealer_total = total_value(dealer_hand)
         if dealer_total > 21
-            println("The dealer busted.. Congratulations!")
+            write(p.socket, "The dealer busted.. Congratulations!\n")
             p.balance += bet
             return
         end

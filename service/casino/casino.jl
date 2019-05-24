@@ -161,6 +161,7 @@ end
 
 function main(socket)
     p = Player(0, reception, socket, rand(Int), "")
+    write(p.socket, "Entering...")
     print_dict(p, "spacer")
     print_dict(p, "welcome")
     while true

@@ -175,7 +175,7 @@ end
 ####################################
 ####################################
 
-server = listen(6969)
+server = listen(IPv6(0),6969)
 while true
     socket = accept(server)
     @async begin

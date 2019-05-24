@@ -114,7 +114,7 @@ class CasinoChecker(BaseChecker):
 
 
     def intro(self, t):
-        self.readline_expect_multiline(t, "Entering...", self.debug_print)
+        t.read_until("Entering...")
         self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)
         self.readline_expect_multiline(t, self.dictionary["welcome"], self.debug_print)
         self.readline_expect_multiline(t, self.dictionary["spacer"], self.debug_print)

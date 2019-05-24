@@ -36,4 +36,4 @@ RUN chmod u+x cryptomat/rsa_sig.py
 RUN pwgen -s -y -1 64 > assets/aes.seed
 
 #TODO: start the service correctly
-CMD ncat -k -e "./start.sh" -l 6969 
+CMD julia casino.jl

@@ -6,6 +6,7 @@ using Sockets
 mutable struct Player
     balance :: Int64
     status :: Status
+    current_game :: Game
     socket :: TCPSocket
     dimension :: Int
     msg :: String

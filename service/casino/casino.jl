@@ -10,23 +10,22 @@ include("tables.jl")
 
 function gamble(p::Player)
     while true
-        global current_game
         print_dict(p, "spacer")
         print_dict(p, "gamble_0")
         printGames(p)
         print_dict(p, "gamble_1")
-        current_game = readline(p.socket)
-        if current_game == ""
+        s = readline(p.socket)
+        if s == ""
             print_dict(p, "repeat")
             continue
-        elseif current_game == "black_jack"
-            current_game = black_jack
+        elseif s == "black_jack"
+            p.current_game = black_jack
             break
-        elseif current_game == "slot_machine"
-            current_game = slot_machine
+        elseif s == "slot_machine"
+            p.current_game = slot_machine
             break
-        elseif current_game == "roulette"
-            current_game = roulette
+        elseif s == "roulette"
+            p.current_game = roulette
             break
         else
             print_dict(p, "irritated")
@@ -36,7 +35,7 @@ function gamble(p::Player)
     end
     print_dict(p, "spacer")
     while true
-        if current_game == slot_machine
+        if p.current_game == slot_machine
             break
         end
         print_dict(p, "table_0")
@@ -45,7 +44,7 @@ function gamble(p::Player)
             print_dict(p, "repeat")
             continue
         elseif s == "j"
-            if join_table(p, current_game)
+            if join_table(p)
                 break
             else
                 print_dict(p, "gamble_3")
@@ -54,7 +53,7 @@ function gamble(p::Player)
             end
 
         elseif s == "c"
-            create_table(p, current_game)
+            create_table(p)
             continue
         else
             print_dict(p, "irritated")
@@ -65,11 +64,11 @@ function gamble(p::Player)
 
     while true
         print_dict(p, "spacer")
-        if current_game == black_jack
+        if p.current_game == black_jack
             play_black_jack(p)
-        elseif current_game == slot_machine
+        elseif p.current_game == slot_machine
             play_slot_machine(p)
-        elseif current_game == roulette
+        elseif p.current_game == roulette
             play_roulette(p)
         end
 
@@ -160,8 +159,7 @@ function receptionDesk(p::Player)
 end
 
 function main(socket)
-    p = Player(0, reception, socket, rand(Int), "")
-    write(p.socket, "Entering...")
+    p = Player(0, reception, slot_machine, socket, rand(Int), "")
     print_dict(p, "spacer")
     print_dict(p, "welcome")
     while true
@@ -176,13 +174,15 @@ end
 ####################################
 
 server = listen(IPv6(0),6969)
+println("Waiting for people to enter the casino..")
 while true
     socket = accept(server)
+    println("Accepted: $(getsockname(socket))")
     @async begin
         try
             main(socket)
         catch err
-            print("connection ended with $err")
+            println("connection ended with $err")
         end
     end
 end

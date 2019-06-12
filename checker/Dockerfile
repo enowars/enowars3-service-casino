@@ -23,8 +23,9 @@ RUN pip3 install uwsgi
 WORKDIR /checker
 COPY ./requirements.txt /checker/requirements.txt
 RUN pip3 install -r requirements.txt
+COPY pkgInstallation.jl .
+RUN julia pkgInstallation.jl 
 COPY . .
-RUN julia pkgInstallation.jl
 
 
 #ENTRYPOINT ["/bin/bash"]

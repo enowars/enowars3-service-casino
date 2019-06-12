@@ -1,10 +1,13 @@
+#TODO: adjust service ID
+
 version: '2.1'
 services:
   casino-backend:
     build: .
     networks:
       checkernet:
-        ipv6_address: fd00:1337:0:cecc:1::2
+#the 2 after 'cecc' is the service ID
+        ipv6_address: fd00:1337:0:cecc:2::2
   casino-frontend:
     image: nginx:1.13-alpine
     volumes:
@@ -13,7 +16,7 @@ services:
       - casino-backend
     networks:
       checkernet:
-        ipv6_address: fd00:1337:0:cecc:1::1
+        ipv6_address: fd00:1337:0:cecc:2::1
 networks:
   checkernet:
     external: true

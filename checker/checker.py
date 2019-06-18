@@ -105,6 +105,9 @@ def generate_random_string(length = 3):
 
 class CasinoChecker(BaseChecker):
     debug_print = True
+    flag_count = 2
+    noise_count = 0
+    havoc_count = 0
 
     def readline_expect_multiline(self, telnet_session, msg):
         for m in msg.split('\n'):

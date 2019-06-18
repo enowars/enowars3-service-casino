@@ -300,6 +300,9 @@ class CasinoChecker(BaseChecker):
             self.debug(e)
             raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
 
+    def exploit(self):
+        pass
+
     def putnoise(self):
         pass
 

@@ -23,77 +23,6 @@ def bytes_arr_to_int_arr(bytes_arr):
         result.append(int.from_bytes([b], byteorder='big', signed=False))
     return result
 
-def decrypt_aes(key, iv, enc_msg):
-    #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
-    #return aesSuite.decrypt(enc_msg)
-
-
-    with open(".aes_msg_enc","w") as f:
-        f.write(json.dumps([bytes_arr_to_int_arr(key), bytes_arr_to_int_arr(iv), bytes_arr_to_int_arr(enc_msg)]))
-
-    #TODO: subprocess and stdout
-    exit_code = os.system("julia aes_decryptor.jl")
-
-    print(exit_code)
-    self.debug("Julia Exit code:{}".format(exit_code))
-    if exit_code != 0:
-        raise BrokenServiceException("Julia call didn't exit correctly")
-
-    with open(".aes_msg", "r") as f:
-        msg = json.loads(f.read())
-
-    return bytes(msg).decode('utf-8').rstrip('\x00')
-
-
-#TODO: change for use in the checker
-def decode_crypto_msg(enc_msg_json):
-
-    data = json.loads(enc_msg_json)
-
-    #convert int list to bytes
-    enc_msg_aes = bytes(data[0])
-    iv = bytes(data[1])
-    enc_aes_key = bytes(data[2])
-
-    print("Encrypted AES msg:", enc_msg_aes)
-    print("IV:", iv)
-    print("Encrypted AES key:", enc_aes_key)
-
-    #TODO: validate input
-    aes_key = rsa_decode(enc_aes_key)
-
-    decoded_msg = decrypt_aes(aes_key, iv, enc_msg_aes)
-
-    return decoded_msg
-
-def rsa_decode(enc_aes_key):
-    with open("assets/private.pem") as aeskey_file:
-        key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
-
-    cipher_rsa = PKCS1_OAEP.new(key)
-    #TODO: try - invalid input?
-    enc_key_bytes = cipher_rsa.decrypt(enc_aes_key)
-
-    return enc_key_bytes
-
-
-def rsa_sign_message(msg):
-    with open("assets/private.pem") as aeskey_file:
-        key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
-
-    msg_bytes = bytearray()
-    msg_bytes.extend(map(ord, msg))
-    hash = SHA256.new(msg_bytes)
-    signature = pkcs1_15.new(key).sign(hash)
-
-    hash_list = []
-    #convert back to int list
-
-    for b in signature:
-
-        hash_list.append(int.from_bytes([b], byteorder='big', signed=False))
-    #print(enc_key_list)
-    return json.dumps([msg,hash_list])
 
 
 
@@ -109,11 +38,95 @@ class CasinoChecker(BaseChecker):
     noise_count = 0
     havoc_count = 0
 
+    def decrypt_aes(self, key, iv, enc_msg):
+        #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
+        #return aesSuite.decrypt(enc_msg)
+
+
+        with open(".aes_msg_enc","w") as f:
+            f.write(json.dumps([bytes_arr_to_int_arr(key), bytes_arr_to_int_arr(iv), bytes_arr_to_int_arr(enc_msg)]))
+
+        #TODO: subprocess and stdout
+        exit_code = os.system("julia aes_decryptor.jl")
+
+        print(exit_code)
+        self.debug("Julia Exit code:{}".format(exit_code))
+        if exit_code != 0:
+            raise BrokenServiceException("Julia call didn't exit correctly")
+
+        with open(".aes_msg", "r") as f:
+            msg = json.loads(f.read())
+
+        return bytes(msg).decode('utf-8').rstrip('\x00')
+
+
+    #TODO: change for use in the checker
+    def decode_crypto_msg(self, enc_msg_json):
+
+        self.debug("Starting the decode the message function. Trying to load message as JSON")
+        data = json.loads(enc_msg_json)
+        self.debug("Successfully loaded as JSON.")
+
+        self.debug("Splitting the JSON into message part and converting them to Bytes...")
+        #convert int list to bytes
+        enc_msg_aes = bytes(data[0])
+        self.debug("Encrypted message AES okay")
+        iv = bytes(data[1])
+        self.debug("IV okay")
+        enc_aes_key = bytes(data[2])
+        self.debug("Encrypted AES key okay")
+
+        self.debug("Encrypted AES msg:" + str(enc_msg_aes))
+        self.debug("IV:" + str(iv))
+        self.debug("Encrypted AES key:" + str(enc_aes_key))
+
+        #TODO: validate input
+        self.debug("Trying to decode the AES key with RSA")
+        aes_key = self.rsa_decode(enc_aes_key)
+        self.debug("Successfully decoded AES key")
+
+        self.debug("Trying to decode message")
+        decoded_msg = self.decrypt_aes(aes_key, iv, enc_msg_aes)
+        self.debug("Successfully decoded message")
+
+
+        return decoded_msg
+
+    def rsa_decode(self, enc_aes_key):
+        with open("assets/private.pem") as aeskey_file:
+            key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
+
+        cipher_rsa = PKCS1_OAEP.new(key)
+        #TODO: try - invalid input?
+        enc_key_bytes = cipher_rsa.decrypt(enc_aes_key)
+
+        return enc_key_bytes
+
+
+    def rsa_sign_message(self, msg):
+        with open("assets/private.pem") as aeskey_file:
+            key = RSA.import_key(aeskey_file.read(), passphrase="enowars")
+
+        msg_bytes = bytearray()
+        msg_bytes.extend(map(ord, msg))
+        hash = SHA256.new(msg_bytes)
+        signature = pkcs1_15.new(key).sign(hash)
+
+        hash_list = []
+        #convert back to int list
+
+        for b in signature:
+
+            hash_list.append(int.from_bytes([b], byteorder='big', signed=False))
+        #print(enc_key_list)
+        return json.dumps([msg,hash_list])
+
+
     def readline_expect_multiline(self, telnet_session, msg):
         for m in msg.split('\n'):
             if self.debug_print:
                 tmp = telnet_session.readline_expect(m)
-                print(tmp)
+                #print(tmp)
                 self.debug(tmp)
             else:
                 telnet_session.readline_expect(m)
@@ -192,12 +205,15 @@ class CasinoChecker(BaseChecker):
                 self.insert_table_flag(t)
 
             elif self.flag_idx == 1:
+                self.debug("Putflag - Cryptomat")
+
                 #cryptomat-flag
+                self.debug("Going to Cryptomat")
                 self.goto_cryptomat(t)
                 t.write("o\n")
                 self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_1"])
                 try:
-                    t.write(rsa_sign_message(self.flag)+"\n")
+                    t.write(self.rsa_sign_message(self.flag)+"\n")
                 except:
                     raise BrokenServiceException("rsa error")
                 self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_format"])
@@ -259,31 +275,45 @@ class CasinoChecker(BaseChecker):
                 #get note
                 t.write("◈\n".encode("utf-8"))
                 #retrieve correct dimension
-                print(t.readline_expect(string_dictionary["cryptomat_3"]))
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
                 r = t.read_until("\n")[:-1]
                 try:
+                    self.debug("Starting to work on the found notes")
+                    self.debug("Trying to load notes as JSON")
                     notes = json.loads(r.decode('utf-8'))
+                    self.debug("Notes successfully loaded as JSON")
                     #TODO: adjust to round
+
                     difference = self.round - self.flag_round
+                    self.debug("Difference between roung and flag_round is:" + str(difference))
+
                     dimension = notes[difference]
-                except:
+                    self.debug("Flag dimension: " + str(dimension))
+                except Exception as e:
+                    self.debug(e)
                     raise BrokenServiceException("Notes Error")
                 #set dimension
                 t.write("🕐\n".encode("utf-8"))
+                self.debug("Setting dimension: " + str(dimension))
                 t.write(str(dimension)+"\n")
 
+                self.debug("Dimension set(?). Starting AES-CRT")
                 t.write("3\n")
 
-                print(self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"]))
-
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
+                self.debug("Starting to work on AES messages")
                 for i in range(0,3):
-                    print(t.readline_expect("AES CTR:\n"))
-                    print(t.readline_expect("Message:\n"))
+                    self.debug("AES message nr: " + str(i))
+                    self.readline_expect_multiline(t, "AES CTR:")
+                    self.readline_expect_multiline(t, "Message:")
+                    self.debug("Starting to read AES message")
                     msg = t.read_until("\n")[:-1].decode('utf-8')
+                    self.debug(msg)
 
                     try:
-                        decrypted_msg = decode_crypto_msg(msg)
-                    except:
+                        decrypted_msg = self.decode_crypto_msg(msg)
+                    except Exception as e:
+                        self.debug(e)
                         raise BrokenServiceException("decrypting of message failed")
                         print("Decrypted message: ", decrypted_msg)
                     if i == 0:
@@ -296,7 +326,7 @@ class CasinoChecker(BaseChecker):
             #todo: better leaving
             t.close()
         except Exception as e:
-            self.debug("PRRRROOOOOOF")
+            self.debug("getflag - Exception catched")
             self.debug(e)
             raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
 

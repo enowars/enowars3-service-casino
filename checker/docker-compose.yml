@@ -22,7 +22,7 @@ services:
       - enoverlay
     labels:
         - "traefik.enable=true"
-        - "traefik.backend=casino-checker"
+        - "traefik.backend=casino-backend"
         - "traefik.docker.network=enoverlay"
         - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com"
         - "traefik.port=80"

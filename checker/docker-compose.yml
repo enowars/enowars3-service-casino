@@ -1,13 +1,17 @@
-#TODO: adjust service ID
-
-version: '2.1'
+version: '3'
 services:
   casino-backend:
     build: .
+    image: 10.13.37.7:5000/casino-backend
     networks:
-      checkernet:
-#the 2 after 'cecc' is the service ID
-        ipv6_address: fd00:1337:0:cecc:2::2
+     - bridge
+     - enoverlay
+    environment:
+     - MONGO_ENABLED=1
+     - MONGO_HOST=checkerdb_mongo_1
+     - MONGO_PORT=27017
+     - MONGO_USER=ipv6islove
+     - MONGO_PASSWORD=dockerislove
   casino-frontend:
     image: nginx:1.13-alpine
     volumes:
@@ -15,8 +19,15 @@ services:
     depends_on:
       - casino-backend
     networks:
-      checkernet:
-        ipv6_address: fd00:1337:0:cecc:2::1
+      - enoverlay
+    labels:
+        - "traefik.enable=true"
+        - "traefik.backend=casino-checker"
+        - "traefik.docker.network=enoverlay"
+        - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com"
+        - "traefik.port=80"
 networks:
-  checkernet:
+  bridge:
+    external: true
+  enoverlay:
     external: true

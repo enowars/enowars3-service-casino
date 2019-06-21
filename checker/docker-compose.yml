@@ -1,3 +1,4 @@
+
 version: '3.6'
 services:
   casino-backend:
@@ -19,17 +20,14 @@ services:
     networks:
       - enoverlay
     configs:
-      - source: nginx_config
+      - source: nginx_config__setup_docker_compose_yml
         target: /etc/nginx/conf.d/default.conf
     deploy:
-#      placement:
-#        constraints:
-#          - "node.hostname==blade5"
       labels:
         - "traefik.enable=true"
-        - "traefik.backend=casino-backend"
+        - "traefik.backend=casino-checker"
         - "traefik.docker.network=enoverlay"
-        - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com"
+        - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
         - "traefik.port=80"
       replicas: 1
 networks:
@@ -39,5 +37,6 @@ networks:
     external: true
 
 configs:
-  nginx_config:
+  nginx_config: 
     file: ./nginx.conf
+     

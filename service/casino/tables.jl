@@ -15,7 +15,8 @@ function update_table_list()
         end
         for key in keys(table_list)
             table = table_list[key]
-            if round(Int64, time() * 1000) - table["created"] > 600000
+            #delete tables every 20 minutes
+            if round(Int64, time() * 1000) - table["created"] > 1200000
                 delete!(table_list, key)
             end
         end

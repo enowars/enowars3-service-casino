@@ -1,4 +1,4 @@
-version: '3'
+version: '3.6'
 services:
   casino-backend:
     build: .
@@ -20,12 +20,14 @@ services:
       - casino-backend
     networks:
       - enoverlay
-    labels:
+    deploy:
+      labels:
         - "traefik.enable=true"
         - "traefik.backend=casino-backend"
         - "traefik.docker.network=enoverlay"
         - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com"
         - "traefik.port=80"
+      replicas: 1
 networks:
   bridge:
     external: true

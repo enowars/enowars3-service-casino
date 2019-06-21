@@ -54,4 +54,7 @@ networks:
 volumes:
   casino_db_data:
 
+configs:
+  nginx_config: 
+    file: ./nginx.conf
     

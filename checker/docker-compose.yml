@@ -1,5 +1,5 @@
 
-version: '3.6'
+version: '3.7'
 services:
   casino-backend:
     build: .
@@ -9,7 +9,7 @@ services:
      - enoverlay
     environment:
      - MONGO_ENABLED=1
-     - MONGO_HOST=checkerdb_mongo_1
+     - MONGO_HOST=casino-db
      - MONGO_PORT=27017
      - MONGO_USER=ipv6islove
      - MONGO_PASSWORD=dockerislove
@@ -30,13 +30,28 @@ services:
         - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
         - "traefik.port=80"
       replicas: 1
+  casino-db:
+    image: mongo
+    networks:
+      - enoverlay
+    volumes:
+      - casino_db_data:/data/db
+#we need to fix the node otherwise the volumes are lost after migration :/
+    deploy:
+      placement:
+        constraints:
+          - "node.hostname==blade5"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ipv6islove
+      MONGO_INITDB_ROOT_PASSWORD: dockerislove
+
+
 networks:
   bridge:
     external: true
   enoverlay:
     external: true
+volumes:
+  casino_db_data:
 
-configs:
-  nginx_config: 
-    file: ./nginx.conf
-     
+    

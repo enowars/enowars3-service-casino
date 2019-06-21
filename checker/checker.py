@@ -181,7 +181,7 @@ class CasinoChecker(BaseChecker):
     port = 6969  # default port to send requests to.
 
     def putflag(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)
@@ -228,7 +228,7 @@ class CasinoChecker(BaseChecker):
             raise BrokenServiceException("putflag didnt work")
 
     def getflag(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)
@@ -331,28 +331,28 @@ class CasinoChecker(BaseChecker):
             raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
 
     def exploit(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)
             raise(e)
 
     def putnoise(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)
             raise(e)
 
     def getnoise(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)
             raise(e)
 
     def havoc(self):
-    	try:
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)

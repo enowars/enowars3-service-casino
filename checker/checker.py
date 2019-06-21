@@ -181,12 +181,12 @@ class CasinoChecker(BaseChecker):
     port = 6969  # default port to send requests to.
 
     def putflag(self):
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
         try:
-            try:
-                t = self.connect()
-            except Exception as e:
-                self.debug(e)
-                raise BrokenServiceException("putflag did not work while trying to connect ~ checker author fault DAR+HAS!")
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
@@ -228,12 +228,12 @@ class CasinoChecker(BaseChecker):
             raise BrokenServiceException("putflag didnt work")
 
     def getflag(self):
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
         try:
-            try:
-                t = self.connect()
-            except Exception as e:
-                self.debug(e)
-                raise BrokenServiceException("getflag did not work while trying to connect ~ checker author fault DAR+HAS!")
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
@@ -331,16 +331,32 @@ class CasinoChecker(BaseChecker):
             raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
 
     def exploit(self):
-        pass
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
 
     def putnoise(self):
-        pass
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
 
     def getnoise(self):
-        pass
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
 
     def havoc(self):
-        pass
+    	try:
+            t = self.connect()
+        except Exception as e:
+            self.debug(e)
+            raise(e)
 
 with open('assets/strings.json', 'r') as f:
     string_dictionary = json.load(f)

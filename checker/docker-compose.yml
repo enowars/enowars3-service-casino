@@ -20,7 +20,7 @@ services:
     networks:
       - enoverlay
     configs:
-      - source: nginx_config__setup_docker_compose_yml
+      - source: nginx_config
         target: /etc/nginx/conf.d/default.conf
     deploy:
       labels:

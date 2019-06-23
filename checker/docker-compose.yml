@@ -38,6 +38,7 @@ services:
       - casino_db_data:/data/db
 #we need to fix the node otherwise the volumes are lost after migration :/
     deploy:
+      replicas: 1
       placement:
         constraints:
           - "node.hostname==blade5"

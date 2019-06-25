@@ -42,22 +42,6 @@ class CasinoChecker(BaseChecker):
         #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
         #return aesSuite.decrypt(enc_msg)
 
-
-        """
-        with open(".aes_msg_enc","w") as f:
-            f.write(json.dumps([bytes_arr_to_int_arr(key), bytes_arr_to_int_arr(iv), bytes_arr_to_int_arr(enc_msg)]))
-
-        #TODO: subprocess and stdout
-        exit_code = os.system("julia aes_decryptor.jl")
-
-        print(exit_code)
-        self.debug("Julia Exit code:{}".format(exit_code))
-        if exit_code != 0:
-            raise BrokenServiceException("Julia call didn't exit correctly")
-
-        with open(".aes_msg", "r") as f:
-            msg = json.loads(f.read())
-        """
         if(mode=="ofb"):
             cipher = AES.new(key, AES.MODE_OFB, iv=iv)
             msg=cipher.decrypt(enc_msg)

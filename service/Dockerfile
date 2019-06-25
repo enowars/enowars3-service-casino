@@ -1,14 +1,13 @@
-FROM debian:stretch-slim
+FROM python:3-slim-stretch
 
 MAINTAINER ENOWARS Team (dar.blue)
 
 #install busybox and python3
 RUN apt-get update
 RUN apt-get install wget -y
-RUN apt-get install python3 -y
-RUN apt-get install python3-pip -y
+#RUN apt-get install python3-minimal -y
+#RUN apt-get install python3-pip -y
 RUN apt-get install pwgen -y
-RUN apt-get install nmap -y
 
 WORKDIR /opt
 RUN wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz

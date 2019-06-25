@@ -17,20 +17,15 @@ function encryptMessage(p::Player, mode::Int, message::String, cryptomaterial::A
     #println("Postpad message: ", message)
     #println("Postpad message length: ", length(message))
     if mode == 1
-        write(p.socket, "AES CBC:\n")
         AESCBC(message, cryptomaterial[1], cryptomaterial[2], true)
     elseif mode == 2
-        write(p.socket, "AES CFB:\n")
         AESCFB(message, cryptomaterial[1], cryptomaterial[2], true)
     elseif mode == 3
-        write(p.socket, "AES CTR:\n")
-        AESCTR(message, cryptomaterial[1], cryptomaterial[2])
+		AESOFB(message, cryptomaterial[1], cryptomaterial[2])
     elseif mode == 4
-        write(p.socket, "AES ECB:\n")
         AESECB(message, cryptomaterial[1], true)
     else
-        write(p.socket, "AES OFB:\n")
-        AESOFB(message, cryptomaterial[1], cryptomaterial[2])
+		AESCTR(message, cryptomaterial[1], cryptomaterial[2])
     end
 
 end

@@ -38,11 +38,12 @@ class CasinoChecker(BaseChecker):
     noise_count = 0
     havoc_count = 0
 
-    def decrypt_aes(self, key, iv, enc_msg):
+    def decrypt_aes(self, key, iv, enc_msg, mode):
         #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
         #return aesSuite.decrypt(enc_msg)
 
 
+        """
         with open(".aes_msg_enc","w") as f:
             f.write(json.dumps([bytes_arr_to_int_arr(key), bytes_arr_to_int_arr(iv), bytes_arr_to_int_arr(enc_msg)]))
 
@@ -56,12 +57,21 @@ class CasinoChecker(BaseChecker):
 
         with open(".aes_msg", "r") as f:
             msg = json.loads(f.read())
+        """
+        if(mode=="ofb"):
+            cipher = AES.new(key, AES.MODE_OFB, iv=iv)
+            msg=cipher.decrypt(enc_msg)
+        elif(mode=="cbc"):
+            pass
+            #TODO
+        else:
+            print("Invalid mode")
 
-        return bytes(msg).decode('utf-8').rstrip('\x00')
+        return msg.decode('utf-8').rstrip('\x00')
 
 
     #TODO: change for use in the checker
-    def decode_crypto_msg(self, enc_msg_json):
+    def decode_crypto_msg(self, enc_msg_json, mode="ofb"):
 
         self.debug("Starting the decode the message function. Trying to load message as JSON")
         data = json.loads(enc_msg_json)
@@ -86,7 +96,7 @@ class CasinoChecker(BaseChecker):
         self.debug("Successfully decoded AES key")
 
         self.debug("Trying to decode message")
-        decoded_msg = self.decrypt_aes(aes_key, iv, enc_msg_aes)
+        decoded_msg = self.decrypt_aes(aes_key, iv, enc_msg_aes, mode=mode)
         self.debug("Successfully decoded message")
 
 
@@ -297,21 +307,21 @@ class CasinoChecker(BaseChecker):
                 self.debug("Setting dimension: " + str(dimension))
                 t.write(str(dimension)+"\n")
 
-                self.debug("Dimension set(?). Starting AES-CRT")
+                self.debug("Dimension set(?). Starting AES-OFB")
                 t.write("3\n")
 
                 self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
                 self.debug("Starting to work on AES messages")
                 for i in range(0,3):
-                    self.debug("AES message nr: " + str(i))
-                    self.readline_expect_multiline(t, "AES CTR:")
+                    self.debug("AES message Nr: " + str(i))
+                    #self.readline_expect_multiline(t, "AES CTR:")
                     self.readline_expect_multiline(t, "Message:")
                     self.debug("Starting to read AES message")
                     msg = t.read_until("\n")[:-1].decode('utf-8')
                     self.debug(msg)
 
                     try:
-                        decrypted_msg = self.decode_crypto_msg(msg)
+                        decrypted_msg = self.decode_crypto_msg(msg, mode="ofb")
                     except Exception as e:
                         self.debug(e)
                         raise BrokenServiceException("decrypting of message failed")

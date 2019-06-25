@@ -9,8 +9,7 @@ function use_cryptomat(p::Player)
     p.msg = ""
     while true
         user_input = readline(p.socket)
-        #if ("1" <= user_input <= "5") || ("١" <= user_input <= "٥")
-        if (user_input == "3") || (user_input == "٣")
+        if (user_input == "3") || (user_input == "1")
             sendSecret(p, parse(Int, user_input), p.msg)
             print_dict(p, "cryptomat_0")
         elseif user_input == "u"
@@ -19,7 +18,7 @@ function use_cryptomat(p::Player)
             print_dict(p, "cryptomat_0")
         elseif user_input == "c"
             p.msg = ""
-        elseif user_input == "r"
+        elseif user_input == "p"
             print_dict(p, "cryptomat_0")
             continue
         elseif user_input == "o"

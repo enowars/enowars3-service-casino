@@ -5,7 +5,7 @@
   "bathroom_3": "Since you like to be edgy, you decide not to decide! For a moment you feel strong and powerful but then you realise that no one cares and you return to the reception..",
   "bathroom_4": "On your way back to the reception you see the old vending machine again. Do you want to take a closer look at the vending machine[v] or do you want return to the reception[r]?",
   "bathroom_5": "You return to the reception..",
-  "cryptomat_0": "Welcome to the Cryptomat!\n\nChoose your mode:\n    [1 ١] AES CBC (out of order)\n    [2 ٢] AES CFB(out of order)\n    [3 ٣] AES CTR\n    [4 ٤] AES ECB(out of order)\n    [5 ٥] AES OFB(our of order)\n    [u] Upload message\n    [c] clear message\n    [o] OS update\n    [r] Print this message\n    [l] Leave\n",
+  "cryptomat_0": "Welcome to the Cryptomat!\n\nChoose your mode:\n    [1] Feedbackphobia Mode\n    [2] Super Safe Mode (out of order)\n    [3] Feebackmania Mode\n    [u] Upload message\n    [c] Clear message\n    [o] OS update\n    [p] Print this message\n    [l] Leave\n",
   "cryptomat_1": "Enter your message:",
   "cryptomat_2": "The cryptomat feels cold.",
   "cryptomat_3": "You find a sparkling note under the Cryptomat.",

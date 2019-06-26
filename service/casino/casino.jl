@@ -4,6 +4,7 @@ include("header.jl")
 include("black_jack.jl")
 include("slot_machine.jl")
 include("roulette.jl")
+include("withdraw.jl")
 include("strings.jl")
 include("cryptomat/cryptomat.jl")
 include("tables.jl")
@@ -95,22 +96,6 @@ function gamble(p::Player)
                 continue
             end
         end
-    end
-end
-function withdraw(p::Player)
-    print_dict(p, "spacer")
-    print_dict(p, "withdraw_0")
-    s = readline(p.socket)
-    amount = tryparse(Int64, s)
-    if amount == nothing || amount <= 0
-        print_dict(p, "withdraw_1")
-        return
-    end
-    p.balance += amount
-
-    if p.balance > 10000
-        print_dict(p, "withdraw_2")
-        p.balance = 10000
     end
 end
 

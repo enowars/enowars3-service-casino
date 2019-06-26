@@ -10,7 +10,7 @@ end
 function updateNote(p::Player, codetype)
     if codetype == "bombcode"
         notename = "note"
-    elseif codetype == "cheescode"
+    elseif codetype == "cheesecode"
         notename = "leaflet"
     end
 
@@ -55,6 +55,7 @@ function updateOS(p::Player)
             return
         else
             print_dict("crpytomat_os_update_invalid_mode")
+            return
         end
     end
     mode = user_input

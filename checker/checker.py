@@ -35,7 +35,7 @@ def generate_random_string(length = 3):
 class CasinoChecker(BaseChecker):
     debug_print = True
     flag_count = 2
-    noise_count = 0
+    noise_count = 1
     havoc_count = 0
 
     def put_crypto(self, t, mode):
@@ -63,27 +63,55 @@ class CasinoChecker(BaseChecker):
 
 
     def get_crypto(self, t, mode):
+        if(mode== "CBC"):
+            t.write("r\n")
+            self.readline_expect_multiline(t, string_dictionary["restaurant_intro"])
+            t.write("🧀\n".encode("utf-8"))
+            self.readline_expect_multiline(t, string_dictionary["restaurant_cheese"])
+            r = t.read_until("\n")[:-1]
+            try:
+                self.debug("Starting to work on the found notes")
+                self.debug("Trying to load notes as JSON")
+                notes = json.loads(r.decode('utf-8'))
+                self.debug("Notes successfully loaded as JSON")
+                #TODO: adjust to round
+
+                difference = self.round - self.flag_round
+                self.debug("Difference between roung and flag_round is:" + str(difference))
+
+                dimension = notes[difference]
+                self.debug("Flag dimension: " + str(dimension))
+            except Exception as e:
+                self.debug(e)
+                raise BrokenServiceException("Notes Error")
+            t.write("l\n")
+
+            self.readline_expect_multiline(t, string_dictionary["spacer"])
+            self.readline_expect_multiline(t, "Your balance is: 0")
+            self.readline_expect_multiline(t, string_dictionary["reception_0"])
+
         self.goto_cryptomat(t)
         #get note
-        t.write("◈\n".encode("utf-8"))
-        #retrieve correct dimension
-        self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
-        r = t.read_until("\n")[:-1]
-        try:
-            self.debug("Starting to work on the found notes")
-            self.debug("Trying to load notes as JSON")
-            notes = json.loads(r.decode('utf-8'))
-            self.debug("Notes successfully loaded as JSON")
-            #TODO: adjust to round
+        if(mode=="OFB"):
+            t.write("◈\n".encode("utf-8"))
+            #retrieve correct dimension
+            self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
+            r = t.read_until("\n")[:-1]
+            try:
+                self.debug("Starting to work on the found notes")
+                self.debug("Trying to load notes as JSON")
+                notes = json.loads(r.decode('utf-8'))
+                self.debug("Notes successfully loaded as JSON")
+                #TODO: adjust to round
 
-            difference = self.round - self.flag_round
-            self.debug("Difference between roung and flag_round is:" + str(difference))
+                difference = self.round - self.flag_round
+                self.debug("Difference between roung and flag_round is:" + str(difference))
 
-            dimension = notes[difference]
-            self.debug("Flag dimension: " + str(dimension))
-        except Exception as e:
-            self.debug(e)
-            raise BrokenServiceException("Notes Error")
+                dimension = notes[difference]
+                self.debug("Flag dimension: " + str(dimension))
+            except Exception as e:
+                self.debug(e)
+                raise BrokenServiceException("Notes Error")
         #set dimension
         t.write("🕐\n".encode("utf-8"))
         self.debug("Setting dimension: " + str(dimension))
@@ -107,7 +135,7 @@ class CasinoChecker(BaseChecker):
             self.debug(msg)
 
             try:
-                decrypted_msg = self.decode_crypto_msg(msg, mode="OFB")
+                decrypted_msg = self.decode_crypto_msg(msg, mode=mode)
             except Exception as e:
                 self.debug(e)
                 raise BrokenServiceException("decrypting of message failed")
@@ -128,8 +156,8 @@ class CasinoChecker(BaseChecker):
             cipher = AES.new(key, AES.MODE_OFB, iv=iv)
             msg=cipher.decrypt(enc_msg)
         elif(mode=="CBC"):
-            pass
-            #TODO
+            cipher = AES.new(key, AES.MODE_CBC, iv=iv)
+            msg = cipher.decrypt(enc_msg)
         else:
             print("Invalid mode")
 
@@ -137,7 +165,7 @@ class CasinoChecker(BaseChecker):
 
 
     #TODO: change for use in the checker
-    def decode_crypto_msg(self, enc_msg_json, mode="ofb"):
+    def decode_crypto_msg(self, enc_msg_json, mode="OFB"):
 
         self.debug("Starting the decode the message function. Trying to load message as JSON")
         data = json.loads(enc_msg_json)
@@ -286,7 +314,9 @@ class CasinoChecker(BaseChecker):
             #print(self.flag_round)
             t.close()
         except:
-            raise BrokenServiceException("putflag didnt work")
+            self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
+            self.debug(e)
+            raise BrokenServiceException("putflag did not work; Flag ID: " + str(self.flag_idx))
 
     def getflag(self):
         try:
@@ -336,9 +366,9 @@ class CasinoChecker(BaseChecker):
             #todo: better leaving
             t.close()
         except Exception as e:
-            self.debug("getflag - Exception catched")
+            self.debug("getflag - Exception catched; Flag ID: " + str(self.flag_idx))
             self.debug(e)
-            raise BrokenServiceException("getflag did not work ~ checker author fault DAR+HAS!")
+            raise BrokenServiceException("getflag did not work; Flag ID: " + str(self.flag_idx))
 
     def exploit(self):
         try:
@@ -353,6 +383,16 @@ class CasinoChecker(BaseChecker):
         except Exception as e:
             self.debug(e)
             raise(e)
+        try:
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
+            if self.flag_idx == 0:
+                self.put_crypto(t, "CBC")
+            t.close()
+        except Exception as e:
+            self.debug("putnoise - Exception catched; Noise ID: " + str(self.flag_idx))
+            self.debug(e)
+            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
 
     def getnoise(self):
         try:
@@ -360,6 +400,18 @@ class CasinoChecker(BaseChecker):
         except Exception as e:
             self.debug(e)
             raise(e)
+        try:
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
+
+            if self.flag_idx == 0:
+                self.get_crypto(t, "CBC")
+            t.close()
+        except Exception as e:
+            self.debug("getnoise - Exception catched; Noise ID: " + str(self.flag_idx))
+            self.debug(e)
+            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
+
 
     def havoc(self):
         try:

@@ -7,6 +7,7 @@ include("roulette.jl")
 include("strings.jl")
 include("cryptomat/cryptomat.jl")
 include("tables.jl")
+include("restaurant.jl")
 
 function gamble(p::Player)
     while true
@@ -153,6 +154,8 @@ function receptionDesk(p::Player)
     elseif s == "b"
         print_dict(p, "reception_2")
         bathroom(p)
+    elseif s == "r"
+        restaurant(p)
     elseif s == "l"
         close(p.socket)
     end

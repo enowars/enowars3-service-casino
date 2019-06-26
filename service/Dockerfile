@@ -31,9 +31,7 @@ RUN pip3 install -r requirements.txt
 COPY casino casino
 WORKDIR casino
 
-RUN chmod u+x start.sh
-RUN chmod u+x cryptomat/rsa.py
-RUN chmod u+x cryptomat/rsa_sig.py
+RUN chmod u+x cryptomat/rsa.py cryptomat/rsa_sig.py
 
 #generate the aes.seed randomly
 RUN pwgen -s -y -1 64 > assets/aes.seed

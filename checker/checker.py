@@ -38,14 +38,96 @@ class CasinoChecker(BaseChecker):
     noise_count = 0
     havoc_count = 0
 
+    def put_crypto(self, t, mode):
+        self.debug("Putflag - Cryptomat")
+
+        #cryptomat-flag
+        self.debug("Going to Cryptomat")
+        self.goto_cryptomat(t)
+        t.write("o\n")
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_mode"])
+        if(mode == "OFB"):
+            t.write("💣\n".encode("utf-8"))
+        elif(mode == "CBC"):
+            t.write("🧀\n".encode("utf-8"))
+
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_1"])
+        try:
+            t.write(self.rsa_sign_message(self.flag)+"\n")
+        except:
+            raise BrokenServiceException("rsa error")
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_format"])
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_signature"])
+        self.readline_expect_multiline(t, "Updating...")
+        self.readline_expect_multiline(t, "Updated")
+
+
+    def get_crypto(self, t, mode):
+        self.goto_cryptomat(t)
+        #get note
+        t.write("◈\n".encode("utf-8"))
+        #retrieve correct dimension
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
+        r = t.read_until("\n")[:-1]
+        try:
+            self.debug("Starting to work on the found notes")
+            self.debug("Trying to load notes as JSON")
+            notes = json.loads(r.decode('utf-8'))
+            self.debug("Notes successfully loaded as JSON")
+            #TODO: adjust to round
+
+            difference = self.round - self.flag_round
+            self.debug("Difference between roung and flag_round is:" + str(difference))
+
+            dimension = notes[difference]
+            self.debug("Flag dimension: " + str(dimension))
+        except Exception as e:
+            self.debug(e)
+            raise BrokenServiceException("Notes Error")
+        #set dimension
+        t.write("🕐\n".encode("utf-8"))
+        self.debug("Setting dimension: " + str(dimension))
+        t.write(str(dimension)+"\n")
+
+        self.debug("Dimension set(?). Starting AES-" + mode)
+        if(mode == "OFB"):
+            mode_nr = "3"
+        elif(mode == "CBC"):
+            mode_nr = "1"
+        t.write(mode_nr+"\n")
+
+        self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
+        self.debug("Starting to work on AES messages")
+        for i in range(0,3):
+            self.debug("AES message Nr: " + str(i))
+            #self.readline_expect_multiline(t, "AES CTR:")
+            self.readline_expect_multiline(t, "Message:")
+            self.debug("Starting to read AES message")
+            msg = t.read_until("\n")[:-1].decode('utf-8')
+            self.debug(msg)
+
+            try:
+                decrypted_msg = self.decode_crypto_msg(msg, mode="OFB")
+            except Exception as e:
+                self.debug(e)
+                raise BrokenServiceException("decrypting of message failed")
+                print("Decrypted message: ", decrypted_msg)
+            if i == 0:
+                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
+            elif i == 1:
+                assert_equals(decrypted_msg , self.flag, autobyteify=True)
+            elif i == 2:
+                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+
+
     def decrypt_aes(self, key, iv, enc_msg, mode):
         #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
         #return aesSuite.decrypt(enc_msg)
 
-        if(mode=="ofb"):
+        if(mode=="OFB"):
             cipher = AES.new(key, AES.MODE_OFB, iv=iv)
             msg=cipher.decrypt(enc_msg)
-        elif(mode=="cbc"):
+        elif(mode=="CBC"):
             pass
             #TODO
         else:
@@ -199,22 +281,7 @@ class CasinoChecker(BaseChecker):
                 self.insert_table_flag(t)
 
             elif self.flag_idx == 1:
-                self.debug("Putflag - Cryptomat")
-
-                #cryptomat-flag
-                self.debug("Going to Cryptomat")
-                self.goto_cryptomat(t)
-                t.write("o\n")
-                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_1"])
-                try:
-                    t.write(self.rsa_sign_message(self.flag)+"\n")
-                except:
-                    raise BrokenServiceException("rsa error")
-                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_format"])
-                self.readline_expect_multiline(t, string_dictionary["cryptomat_os_update_accept_signature"])
-                self.readline_expect_multiline(t, "Updating...")
-                self.readline_expect_multiline(t, "Updated")
-
+                self.put_crypto(t, mode="OFB")
             #TODO: better leaving
             #print(self.flag_round)
             t.close()
@@ -265,58 +332,7 @@ class CasinoChecker(BaseChecker):
 
 
             elif self.flag_idx == 1:
-                self.goto_cryptomat(t)
-                #get note
-                t.write("◈\n".encode("utf-8"))
-                #retrieve correct dimension
-                self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
-                r = t.read_until("\n")[:-1]
-                try:
-                    self.debug("Starting to work on the found notes")
-                    self.debug("Trying to load notes as JSON")
-                    notes = json.loads(r.decode('utf-8'))
-                    self.debug("Notes successfully loaded as JSON")
-                    #TODO: adjust to round
-
-                    difference = self.round - self.flag_round
-                    self.debug("Difference between roung and flag_round is:" + str(difference))
-
-                    dimension = notes[difference]
-                    self.debug("Flag dimension: " + str(dimension))
-                except Exception as e:
-                    self.debug(e)
-                    raise BrokenServiceException("Notes Error")
-                #set dimension
-                t.write("🕐\n".encode("utf-8"))
-                self.debug("Setting dimension: " + str(dimension))
-                t.write(str(dimension)+"\n")
-
-                self.debug("Dimension set(?). Starting AES-OFB")
-                t.write("3\n")
-
-                self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
-                self.debug("Starting to work on AES messages")
-                for i in range(0,3):
-                    self.debug("AES message Nr: " + str(i))
-                    #self.readline_expect_multiline(t, "AES CTR:")
-                    self.readline_expect_multiline(t, "Message:")
-                    self.debug("Starting to read AES message")
-                    msg = t.read_until("\n")[:-1].decode('utf-8')
-                    self.debug(msg)
-
-                    try:
-                        decrypted_msg = self.decode_crypto_msg(msg, mode="ofb")
-                    except Exception as e:
-                        self.debug(e)
-                        raise BrokenServiceException("decrypting of message failed")
-                        print("Decrypted message: ", decrypted_msg)
-                    if i == 0:
-                        assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
-                    elif i == 1:
-                        assert_equals(decrypted_msg , self.flag, autobyteify=True)
-                    elif i == 2:
-                        assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
-
+                self.get_crypto(t, "OFB")
             #todo: better leaving
             t.close()
         except Exception as e:

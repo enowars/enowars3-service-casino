@@ -48,7 +48,13 @@ function sendSecret(p::Player, mode::Int, customMessage::String)
     print_dict(p, "cryptomat_sender_1")
 
 	if customMessage == ""
-		path = string("data/.bombcode_", p.dimension)
+		if mode == 1
+			codetype = "cheesecode"
+		elseif mode == 3
+			codetype = "bombcode"
+		end
+
+		path = string("data/.", codetype, "_", p.dimension)
 		if !(isfile(path))
 			customMessage = string(rand(Int))
 		else

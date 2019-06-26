@@ -12,6 +12,8 @@
   "cryptomat_4": "Invalid Input",
   "cryptomat_5": "Goodbye. Your Cryptomat",
   "cryptomat_os_update_1": "Insert the new OS here:",
+  "cryptomat_os_update_mode": "Choose the update mode:\n    [💣] Bombastic Mode\n    [🧀] Cheesey Mode\n    [l]eave OS update",
+  "crpytomat_os_update_invalid_mode": "Invalid mode. Try again or [l]eave OS updater",
   "cryptomat_os_update_accept_format": "Accepted format",
   "cryptomat_os_update_accept_signature": "Signature valid",
   "cryptomat_sender_1": "I will now send you the message in the choosen mode.",

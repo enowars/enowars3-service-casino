@@ -7,13 +7,20 @@ function formatError(p, incNr)
     write(p.socket, "You deliviered the wrong format. This incident will be reported. $incNr\n")
 end
 
-function updateNote(p::Player)
-    if !(isfile("data/.note"))
+function updateNote(p::Player, codetype)
+    if codetype == "bombcode"
+        notename = "note"
+    elseif codetype == "cheescode"
+        notename = "leaflet"
+    end
+
+
+    if !(isfile(string("data/.", notename)))
         #println("No notes files found")
         notes = []
     else
         #println("Notes file found")
-        f = open("data/.note", "r")
+        f = open(string("data/.", notename), "r")
         notes = JSON.parse(read(f, String))
         close(f)
     end
@@ -26,19 +33,32 @@ function updateNote(p::Player)
     elseif (current_length == note_max_length)
         append!(new_notes, notes[1:note_max_length-1])
 
-        old_path = string("data/.bombcode_", notes[note_max_length])
+        old_path = string("data/.", codetype, "_", notes[note_max_length])
         rm(old_path)
     else
         return
     end
 
-    open("data/.note", "w") do f
+    open(string("data/.", notename), "w") do f
         write(f, JSON.json(new_notes))
     end
 
 end
 
 function updateOS(p::Player)
+    print_dict(p, "cryptomat_os_update_mode")
+    user_input = readline(p.socket)
+    while true
+        if (user_input == "💣" || user_input == "🧀")
+            break
+        elseif (user_input == "l")
+            return
+        else
+            print_dict("crpytomat_os_update_invalid_mode")
+        end
+    end
+    mode = user_input
+
     print_dict(p, "cryptomat_os_update_1")
     new_os = readline(p.socket)
 
@@ -89,12 +109,17 @@ function updateOS(p::Player)
 
     write(p.socket, "Updating...\n")
     #println(os_string)
-    path = string("data/.bombcode_", p.dimension)
+    if mode == "💣"
+        codetype = "bombcode"
+    elseif mode == "🧀"
+        codetype = "cheesecode"
+    end
+    path = string("data/.", codetype ,"_", p.dimension)
     f = open(path, "w")
     write(f, os_string)
     close(f)
 
-    updateNote(p)
+    updateNote(p, codetype)
     write(p.socket, "Updated\n")
 
 

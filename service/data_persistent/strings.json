@@ -55,5 +55,8 @@
   "withdraw_0": "How much money do you want to withdraw?",
   "withdraw_1": "Sorry there must be some mistake with your credit card...",
   "withdraw_2": "Sorry you are not allowed to start with more than 10000 chips",
-  "withdraw_3": "Before you can withdraw any money you need to confirm that you actually are human and not one of those ugly AI that are roaming lately..\nJust tell me the sum of all the cards you see..."
+  "withdraw_3": "Before you can withdraw any money you need to confirm that you actually are human and not one of those ugly AI that are roaming around in this area lately..\nJust tell me the sum of all the cards you see...",
+  "withdraw_4": "Very well, I will withdraw the money from your credit card..",
+  "withdraw_5": "I am very sorry but that was not the correct sum. I will allow you one more try..",
+  "withdraw_6": "You do not appear to be human, please leave this establishment now.."
 }

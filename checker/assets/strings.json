@@ -28,10 +28,10 @@
   "reception_1": "The man behind the reception looks slightly irritated and repeats himself..",
   "reception_2": "You want to use the bathroom? No problem, you can find it down the hall to the left.",
   "repeat": "Thinking you did not understand they repeat themself..",
-  "restaurant_intro":"You arrive at the restaurant. It looks like one those old fashioned fastfood chains and a big blue shines from F above.\nDo you want to go to the [c]ounter or do you want to [l]eave?",
-  "restaurant_counter": "You go to the counter and a man in a blue uniform greets you.\n\nWelcome to Facebooks Fasteat. Due to some technical issues we are right now closed.\n[l]eave",
+  "restaurant_intro":"You arrive at the restaurant. It looks like one those old fashioned fastfood chains and a big blue F shines from above.\nDo you want to go to the [c]ounter or do you want to [l]eave?",
+  "restaurant_counter": "You go to the counter and a man in a blue uniform greets you.\n\nWelcome to Facebooks Fasteat. Due to some technical issues we are closed right now.\n[l]eave",
   "restaurant_cheese" : "You get sense an amazing smell. It smells like cheese...\nAfter a while of searching the whole restaurant you find a cheesy leaflet behind a plant.",
-  "restaurant_cheese_fail" : "You search for chesse but you can't find some.",
+  "restaurant_cheese_fail" : "You search for cheese but you can't find some.",
   "slot_machine_0": "You join many others mindlessly looking at blinking screens..",
   "spacer": "****************************",
   "table_0": "You can choose to join[j] one of the other tables or create[c] a new one.",
@@ -54,5 +54,9 @@
   "welcome": "You enter the Casino. It feels like another world. No smog, no dying people hiding behind blankets, just a man smiling at you from the reception.\nYou approach the man...\nWelcome to the great Casino! Leave the rest of the world behind you and enjoy your stay!",
   "withdraw_0": "How much money do you want to withdraw?",
   "withdraw_1": "Sorry there must be some mistake with your credit card...",
-  "withdraw_2": "Sorry you are not allowed to start with more than 10000 chips"
+  "withdraw_2": "Sorry you are not allowed to start with more than 10000 chips",
+  "withdraw_3": "Before you can withdraw any money you need to confirm that you actually are human and not one of those ugly AI that are roaming around in this area lately..\nJust tell me the sum of all the cards you see...",
+  "withdraw_4": "Very well, I will withdraw the money from your credit card..",
+  "withdraw_5": "I am very sorry but that was not the correct sum. I will allow you one more try..",
+  "withdraw_6": "You do not appear to be human, please leave this establishment now.."
 }

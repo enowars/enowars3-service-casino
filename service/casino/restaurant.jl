@@ -21,18 +21,13 @@ function checkToken(p::Player, code::String)
     cryptomaterial[2] = UInt8.(token_json[2])
 
 
-    println("Pre decrypt")
     msg = AESCBC(enc_msg, cryptomaterial[1], cryptomaterial[2], false)
 
-    println("Decrypted")
     x = p.dimension % length(code)+1
     code = string(code[x+1:length(code)], code[1:x])
 
-    println(code)
-
     msg = String(msg)
     msg = rstrip(msg, '\x00')
-    println(msg)
 
     return msg == code
 

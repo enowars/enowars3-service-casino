@@ -3,7 +3,7 @@ version: '3.6'
 services:
   casino-backend:
     build: .
-    image: 10.13.37.7:5000/casino-backend
+    image: dockerreg.enowars.com:5000/casino-backend
     networks:
      - bridge
      - enoverlay

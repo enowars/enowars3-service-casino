@@ -10,4 +10,6 @@ mutable struct Player
     socket :: TCPSocket
     dimension :: Int
     msg :: String
+    token :: String
+    diarrhea :: Bool
 end

@@ -6,7 +6,6 @@ include("../strings.jl")
 function use_cryptomat(p::Player)
     print_dict(p, "cryptomat_0")
     global note_max_length = 10
-    p.msg = ""
     while true
         user_input = readline(p.socket)
         if (user_input == "1") || (user_input == "3")
@@ -24,6 +23,11 @@ function use_cryptomat(p::Player)
         elseif user_input == "o"
             updateOS(p)
             print_dict(p, "cryptomat_0")
+        elseif user_input == "g"
+            #TODO: Token generation
+            print_dict(p, "crpytomat_generating_token")
+            p.token = sendSecret(p, 1, p.msg, true)
+            print_dict(p, "cryptomat_get_token")
         elseif user_input == "l"
             break
         elseif user_input == "◈"

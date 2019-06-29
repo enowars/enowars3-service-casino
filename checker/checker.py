@@ -312,6 +312,7 @@ class CasinoChecker(BaseChecker):
                 self.put_crypto(t, mode="OFB")
             #TODO: better leaving
             #print(self.flag_round)
+            self.debug("Putflag success before closing")
             t.close()
         except:
             self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
@@ -364,6 +365,7 @@ class CasinoChecker(BaseChecker):
             elif self.flag_idx == 1:
                 self.get_crypto(t, "OFB")
             #todo: better leaving
+            self.debug("Getflag success before closing")
             t.close()
         except Exception as e:
             self.debug("getflag - Exception catched; Flag ID: " + str(self.flag_idx))
@@ -388,6 +390,7 @@ class CasinoChecker(BaseChecker):
             self.intro(t)
             if self.flag_idx == 0:
                 self.put_crypto(t, "CBC")
+            self.debug("Putnoise success before closing")
             t.close()
         except Exception as e:
             self.debug("putnoise - Exception catched; Noise ID: " + str(self.flag_idx))
@@ -406,6 +409,7 @@ class CasinoChecker(BaseChecker):
 
             if self.flag_idx == 0:
                 self.get_crypto(t, "CBC")
+            self.debug("Getnoise success before closing")
             t.close()
         except Exception as e:
             self.debug("getnoise - Exception catched; Noise ID: " + str(self.flag_idx))
@@ -417,8 +421,9 @@ class CasinoChecker(BaseChecker):
         try:
             t = self.connect()
         except Exception as e:
+            self.debug("havoc - Exception catched; Havoc ID: " + str(self.flag_idx))
             self.debug(e)
-            raise(e)
+            raise BrokenServiceException("havoc did not work; Havoc ID: " + str(self.flag_idx))
 
 with open('assets/strings.json', 'r') as f:
     string_dictionary = json.load(f)

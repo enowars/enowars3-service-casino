@@ -30,7 +30,7 @@ function encryptMessage(p::Player, mode::Int, message::String, cryptomaterial::A
 
 end
 
-function generate_cryptomaterial()
+function generate_cryptomaterial(p::Player)
     cryptomaterial = Array{Array{UInt8,1}, 1}(undef, 2)
     f = open("assets/aes.seed", "r")
     aesSeed = read(f)
@@ -38,14 +38,17 @@ function generate_cryptomaterial()
     key = md5(aesSeed)
     cryptomaterial[2] = rand(UInt8, 16)
 	cryptomaterial[2][9] = UInt8(0x00)
-    cryptomaterial[1] = vcat(key, md5(cryptomaterial[2]))
+    cryptomaterial[1] = vcat(key, md5(string(p.dimension)))
     return cryptomaterial
 end
 
 
 
-function sendSecret(p::Player, mode::Int, customMessage::String)
-    print_dict(p, "cryptomat_sender_1")
+function sendSecret(p::Player, mode::Int, customMessage::String, tokenize::Bool=false)
+
+	if !tokenize
+		print_dict(p, "cryptomat_sender_1")
+	end
 
 	if customMessage == ""
 		if mode == 1
@@ -64,11 +67,14 @@ function sendSecret(p::Player, mode::Int, customMessage::String)
 		end
 	end
 
-    messages = ["ATOM-BOMB-CODE-START",
-                customMessage,
-                "ATOM-BOMB-CODE-END"]
-
-    cryptomaterial = generate_cryptomaterial()
+	if tokenize
+		messages = [customMessage]
+	else
+	    messages = ["ATOM-BOMB-CODE-START",
+	                customMessage,
+	                "ATOM-BOMB-CODE-END"]
+	end
+    cryptomaterial = generate_cryptomaterial(p::Player)
 
     for cur_message in messages
         #println("\n", cur_message)
@@ -84,7 +90,10 @@ function sendSecret(p::Player, mode::Int, customMessage::String)
         enc_key = JSON.parse(read(f, String), inttype=UInt8)
         close(f)
         full_Msg = [enc_Msg, cryptomaterial[2], enc_key]
-        write(p.socket, "Message:\n$(JSON.json(full_Msg))\n")
+		if tokenize
+			return JSON.json(full_Msg)
+		end
+		write(p.socket, "Message:\n$(JSON.json(full_Msg))\n")
     end
 
     write(p.socket, "Sending finished\n")

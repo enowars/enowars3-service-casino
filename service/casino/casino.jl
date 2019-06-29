@@ -147,7 +147,7 @@ function receptionDesk(p::Player)
 end
 
 function main(socket)
-    p = Player(0, reception, slot_machine, socket, rand(Int), "")
+    p = Player(0, reception, slot_machine, socket, rand(Int), "", "", false)
     print_dict(p, "spacer")
     print_dict(p, "welcome")
     while true

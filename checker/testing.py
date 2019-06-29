@@ -14,8 +14,8 @@ nr_of_past_rounds_flag_check = 3
 
 def execCommand(round_id, flag, related_round, mode_id, mode):
 	command = "python3 checker.py run -a {address} -r {round_id} -f {flag} -F {related_round} -i {mode_id} {mode}".format(address=address, round_id=round_id, flag=flag, related_round=related_round, mode_id=mode_id, mode=mode)
-	#os.system(command)
-	print(command)
+	print("Executing: ", command)
+	os.system(command)
 
 
 for round in range(rounds):

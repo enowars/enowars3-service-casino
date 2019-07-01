@@ -38,6 +38,8 @@ class CasinoChecker(BaseChecker):
     noise_count = 1
     havoc_count = 0
 
+    balance = 0
+
     def put_crypto(self, t, mode):
         self.debug("Putflag - Cryptomat")
 
@@ -235,7 +237,6 @@ class CasinoChecker(BaseChecker):
             else:
                 telnet_session.readline_expect(m)
 
-
     def intro(self, t):
         self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, string_dictionary["welcome"])
@@ -263,6 +264,107 @@ class CasinoChecker(BaseChecker):
         self.readline_expect_multiline(t, "black_jack\nslot_machine\nroulette")
         self.readline_expect_multiline(t, string_dictionary["gamble_1"])
 
+    def withdraw_chips(self, t, amount):
+        t.write("w\n")
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["withdraw_0"])
+
+        t.write('%d\n' %(amount))
+        self.readline_expect_multiline(t, string_dictionary["withdraw_3"])
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        
+        self.debug("reading the captcha")
+        try:
+            captcha = t.read_until(string_dictionary["spacer"] + "\n")
+            captcha = captcha.decode("utf-8")
+        except Exception as e:
+            self.debug("something went wrong while trying to read the captcha..")
+            self.debug("%s" %(e))
+            raise BrokenServiceException("withdraw_chips - Exception catched; Flag ID: " + str(self.flag_idx))
+        
+        self.debug(captcha)
+        self.debug("calculating captcha")
+        sum = 0
+        for c in captcha:
+            if c == 'T':
+                sum += 10
+            elif c == 'J':
+                sum += 11
+            elif c == 'Q':
+                sum += 12
+            elif c == 'K':
+                sum += 13
+            elif c == 'A':
+                sum += 14
+            elif c.isdigit():
+                sum += int(c)
+        
+        sum /= 3
+        self.debug("the sum should be: %d" %(sum))
+        t.write('%d\n' %(sum))
+        self.readline_expect_multiline(t, string_dictionary["withdraw_4"])
+
+        self.balance += amount
+        if self.balance > 10000:
+            self.readline_expect_multiline(t, string_dictionary["withdraw_2"])
+            self.balance = 10000
+        
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
+        self.readline_expect_multiline(t, string_dictionary["reception_0"])
+
+    def play_slot_machine(self, t, rounds):
+        self.debug("playing %d rounds at the slot_machine" %(rounds))
+        t.write("slot_machine\n")
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
+
+        for i in range(0, rounds):
+            self.readline_expect_multiline(t, string_dictionary["spacer"])
+            self.readline_expect_multiline(t, string_dictionary["slot_machine_0"])
+
+            chips = random.choice([5, 10, 50])
+            t.write("%s\n" %(chips))
+            if self.balance < chips:
+                self.debug("slot_machine - not enough chips to play on. balance: %d chips: %d" %(self.balance, chips))
+                if chips == 5:
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_1"])
+                    weird_guy = True
+                    chips = 1
+                else:
+                    return
+            else:
+                weird_guy = False
+            self.readline_expect_multiline(t, string_dictionary["slot_machine_3"])
+
+            result = t.read_until("\n")
+            result = result.decode("utf-8")
+
+            if result == string_dictionary["slot_machine_4"] + "\n":
+                self.balance += chips
+                self.debug("slot_machine - you win. balance: %d" %(self.balance))
+            elif result == string_dictionary["slot_machine_5"] + "\n":
+                self.balance -= chips
+                self.debug("slot_machine - you lose. balance: %d" %(self.balance))
+            else:
+                self.debug("slot_machine - got: %s expected: slot_machine_4 or slot_machine_5" %(result))
+                raise(BrokenServiceException("slot_machine - win/lose message was tempered with."))
+
+            if weird_guy:
+                if self.balance < 0:
+                    self.readline_expect_multiline(t, string_dictionary["debt_0"])
+                    self.readline_expect_multiline(t, string_dictionary["gamble_4"])
+                    self.readline_expect_multiline(t, string_dictionary["spacer"])
+                    self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
+                    self.readline_expect_multiline(t, string_dictionary["reception_0"])
+                return
+
+            self.readline_expect_multiline(t, string_dictionary["gamble_2"])
+            if rounds-1 == i:
+                t.write("n\n")
+            else:
+                t.write("y\n")
+
+        
     def insert_table_flag(self, t):
         identifier = generate_random_string(20)
         minimum = "1000000000000000000"
@@ -421,9 +523,44 @@ class CasinoChecker(BaseChecker):
         try:
             t = self.connect()
         except Exception as e:
+            self.debug("havoc - Exception catched while connecting to the service; Havoc ID: " + str(self.flag_idx))
+            self.debug(e)
+            raise(e)
+        try:
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
+
+            #randomly choose between playing a game (and withdrawing money), going to the bathroom or to the restaurant
+            c = random.choices(population=['b', 'w', 'r'], weights=[0, 1.0, 0])[0]
+
+            if c == 'b':
+                pass
+            elif c == 'w':
+                self.debug('havoc - withdrawing money')
+                self.withdraw_chips(t, random.choice([1337,10000,1000,420,9999, random.randint(1,4), random.randint(5000,1000000)]))
+                self.debug("successfully withdrew chips, current balance is: %d" %(self.balance))
+
+                self.goto_games(t)
+
+                g = random.choices(population=['black_jack', 'slot_machine', 'roulette'], weights=[0,1,0])[0]
+                
+                if g == 'slot_machine':
+                    self.play_slot_machine(t, random.randint(1,5))
+                elif g == 'roulette':
+                    pass
+                elif g == 'black_jack':
+                    pass
+            elif c == 'r':
+                pass
+            else:
+                self.debug("havoc - unknown choice : %s.. exiting" %(c))
+                return
+
+        except Exception as e:
             self.debug("havoc - Exception catched; Havoc ID: " + str(self.flag_idx))
             self.debug(e)
             raise BrokenServiceException("havoc did not work; Havoc ID: " + str(self.flag_idx))
+
 
 with open('assets/strings.json', 'r') as f:
     string_dictionary = json.load(f)

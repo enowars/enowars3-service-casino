@@ -142,7 +142,13 @@ function receptionDesk(p::Player)
     elseif s == "r"
         restaurant(p)
     elseif s == "l"
-        close(p.socket)
+        if p.balance < 0
+            print_dict(p, "debt_1")
+        else
+            print_dict(p, "spacer")
+            print_dict(p, "exit")
+            close(p.socket)
+        end
     end
 end
 

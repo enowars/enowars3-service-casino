@@ -38,7 +38,7 @@ function captcha(p::Player, num)
             x = rand(1:14)
             sum += x
             if (x == 10) x = "T" end
-            if (x == 11) x = "B" end
+            if (x == 11) x = "J" end
             if (x == 12) x = "Q" end
             if (x == 13) x = "K" end
             if (x == 14) x = "A" end
@@ -82,7 +82,8 @@ function captcha(p::Player, num)
         join(result, "\n")
     end
     write(p.socket, "$result\n")
-
+    print_dict(p, "spacer")
+    
     s = readline(p.socket)
     return sum == tryparse(Int, s)
 end

@@ -72,6 +72,10 @@ function join_table(p::Player)
             continue
         elseif s == "l"
             return false
+        elseif s == "c"
+            table = create_table(p)
+            write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
+            break
         elseif haskey(visible_tables, s)
             table = visible_tables[s]
             write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
@@ -151,8 +155,9 @@ function create_table(p::Player)
             s = JSON.json(table_list)
             write(f, s)
         end
-    end
+        print_dict(p, "table_15")
+        print_dict(p, "spacer")
 
-    print_dict(p, "table_15")
-    print_dict(p, "spacer")
+        return table_list[key]
+    end
 end

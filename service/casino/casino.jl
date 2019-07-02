@@ -64,6 +64,14 @@ function gamble(p::Player)
         end
     end
 
+    if p.current_game == black_jack
+        print_dict(p, "black_jack_welcome")
+    elseif p.current_game == slot_machine
+        print_dict(p, "slot_machine_welcome")
+    elseif p.current_game == roulette
+        print_dict(p, "roulette_welcome")
+    end
+
     while true
         print_dict(p, "spacer")
         if p.current_game == black_jack

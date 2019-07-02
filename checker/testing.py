@@ -8,7 +8,7 @@ havoc_count = 0
 
 rounds = 10
 
-address = "localhost"#"fd00:1337:1:420::1"
+address = "fd00:1337:1:420::1"
 nr_of_past_rounds_flag_check = 3
 
 

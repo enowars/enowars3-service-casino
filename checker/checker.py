@@ -238,6 +238,7 @@ class CasinoChecker(BaseChecker):
                 telnet_session.readline_expect(m)
 
     def intro(self, t):
+        self.balance = 0
         self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, string_dictionary["welcome"])
         self.readline_expect_multiline(t, string_dictionary["spacer"])
@@ -317,6 +318,7 @@ class CasinoChecker(BaseChecker):
         self.debug("playing %d rounds at the slot_machine" %(rounds))
         t.write("slot_machine\n")
         self.readline_expect_multiline(t, string_dictionary["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["slot_machine_welcome"])
 
         for i in range(0, rounds):
             self.readline_expect_multiline(t, string_dictionary["spacer"])
@@ -374,6 +376,8 @@ class CasinoChecker(BaseChecker):
         self.join_any_table(t)
 
         t.read_until("The dealer smiles at you and slightly nods his head as a greeting.\n")
+        self.readline_expect_multiline(t, string_dictionary["roulette_welcome"])
+
         for i in range(0, rounds):
             self.readline_expect_multiline(t, string_dictionary["spacer"])
             self.readline_expect_multiline(t, string_dictionary["roulette_0"])
@@ -415,6 +419,7 @@ class CasinoChecker(BaseChecker):
         self.join_any_table(t)
 
         t.read_until("The dealer smiles at you and slightly nods his head as a greeting.\n")
+        self.readline_expect_multiline(t, string_dictionary["black_jack_welcome"])
 
         for i in range(0, rounds):
             self.readline_expect_multiline(t, string_dictionary["spacer"])
@@ -602,6 +607,7 @@ class CasinoChecker(BaseChecker):
                 self.readline_expect_multiline(t, string_dictionary["table_4"])
                 t.write(passphrase + "\n")
                 self.readline_expect_multiline(t, "You approach the black_jack table " + self.flag + ". The dealer smiles at you and slightly nods his head as a greeting.")
+                self.readline_expect_multiline(t, string_dictionary["black_jack_welcome"])
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, "How much are you willing to bet?")
                 self.readline_expect_multiline(t, "Your balance is: 0")
@@ -614,6 +620,8 @@ class CasinoChecker(BaseChecker):
                 self.readline_expect_multiline(t, string_dictionary["reception_0"])
 
                 t.write("l\n")
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, string_dictionary["exit"])
 
 
             elif self.flag_idx == 1:

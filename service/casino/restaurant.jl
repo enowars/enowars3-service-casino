@@ -61,8 +61,8 @@ function counter(p::Player)
             end
             print_dict(p, "restaurant_casino_royale")
             p.diarrhea = true
-            #TODO print cheeseburger and activate hidden bathroom function
-            elseif (user_input == "d")
+            break
+        elseif (user_input == "d")
             print_dict(p, "restaurant_dips_chips")
         else
             print_dict(p, "restaurant_invalid_input")

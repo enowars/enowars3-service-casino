@@ -9,6 +9,7 @@ include("strings.jl")
 include("cryptomat/cryptomat.jl")
 include("tables.jl")
 include("restaurant.jl")
+include("bathroom.jl")
 
 function gamble(p::Player)
     while true
@@ -99,31 +100,6 @@ function gamble(p::Player)
     end
 end
 
-function bathroom(p::Player)
-    print_dict(p, "spacer")
-    print_dict(p, "bathroom_0")
-    s = readline(p.socket)
-    if s == "w"
-        print_dict(p, "bathroom_1")
-    elseif s == "l"
-        print_dict(p, "bathroom_2")
-    else
-        print_dict(p, "bathroom_3")
-        return
-    end
-
-    print_dict(p, "bathroom_4")
-
-    s = readline(p.socket)
-    if s == "v"
-        print_dict(p, "spacer")
-        use_cryptomat(p)
-    elseif s == "r"
-        p.status = reception
-    end
-
-    print_dict(p, "bathroom_5")
-end
 
 function receptionDesk(p::Player)
     print_dict(p, "spacer")

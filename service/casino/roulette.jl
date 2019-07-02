@@ -6,11 +6,11 @@ function play_roulette(p :: Player)
     result = rand(1:36)
     total_bet = 0
     winnings = 0
-    write(p.socket, "Place your bets!\n")
+    print_dict(p, "roulette_0")
     printBalance(p)
-    write(p.socket, """As you have no idea what you should do you wait for others to place their bets..\nSome old lady says: "100 red" and the dealer responds 100 chips on red.\nSomeone else says: "1500 13-24" and the dealer responds 1500 chips on the numbers from 13 to 24.\n""")
+    print_dict(p, "roulette_1")
     while true
-        write(p.socket, "Place your bets or tell me when you are done[d]..\n")
+        print_dict(p, "roulette_2")
         s = readline(p.socket)
         lines = split(s)
         if s == ""
@@ -19,7 +19,7 @@ function play_roulette(p :: Player)
             if total_bet > 0
                 break
             else
-                write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
+                print_dict(p, "roulette_3")
                 p.status = reception
                 return
             end
@@ -33,10 +33,10 @@ function play_roulette(p :: Player)
                 print_dict(p, "repeat")
                 continue
             elseif bet > (p.balance - total_bet)
-                write(p.socket, "I am really sorry but you do not have that many chips left..\n")
+                print_dict(p, "roulette_4")
                 continue
             elseif bet == 0
-                write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
+                print_dict(p, "roulette_3")
                 p.status = reception
                 return
             end
@@ -106,8 +106,7 @@ function play_roulette(p :: Player)
         end
     end
 
-    write(p.socket, "The ball starts jumping up and down in the wheel, you tremble with excitement..\n")
-    write(p.socket, "After a few rotations the ball stays in a slot..\n")
+    print_dict(p, "roulette_5")
     write(p.socket, "Congratulations the number is.. $result. Your total winnings are: $winnings\n")
 
     p.balance += winnings

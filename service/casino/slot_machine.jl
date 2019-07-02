@@ -1,11 +1,11 @@
 function play_slot_machine(p::Player)
     bet = 0
-    write(p.socket, "You approach the slot_machine. You can throw in [5], [10] or [50] chips.\n")
+    print_dict(p, "slot_machine_0")
 
     while true
         s = readline(p.socket)
         if s == ""
-            write(p.socket, "You decide to leave and head back to the reception..\n")
+            p.status = reception
             return
         elseif s == "50" && p.balance >= 50
             bet = 50
@@ -15,27 +15,29 @@ function play_slot_machine(p::Player)
             break
         elseif s == "5"
             if p.balance < 5
-                println("test")
-                write(p.socket, "Some weird slightly off looking person comes over to you and looks at you with pity..\n")
-                write(p.socket, "You don't even have 5 chips to play at the slot_machine? Here I will help you out..\n")
-                write(p.socket, "Even though they left already, their stench still stays with you and reminds you of outside.\n")
-                write(p.socket, "You realised that they somehow managed to put one of your chips that you didn't even know that they still existed in the slot_machine.\n")
+                print_dict(p, "slot_machine_1")
                 bet = 1
             else
                 bet = 5
             end
             break
         else
-            write(p.socket, "Something seems to be wrong with your chips. Try again..\n")
+            print_dict(p, "slot_machine_2")
         end
     end
 
-    write(p.socket, "The slot_machine starts blinking and making noises. You have no idea what is happening..\n")
+    print_dict(p, "slot_machine_3")
+
     if rand(1:10) == 10
-        write(p.socket, "You win! What a rush!\n")
+        print_dict(p, "slot_machine_4")
         p.balance += bet
     else
-        write(p.socket, "What bad luck, you lost..\n")
+        print_dict(p, "slot_machine_5")
         p.balance -= bet
+    end
+
+    if p.balance < 0
+        print_dict(p, "debt_0")
+        p.status = reception
     end
 end

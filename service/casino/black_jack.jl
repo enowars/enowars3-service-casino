@@ -55,14 +55,14 @@ function natural(p :: Player, bet, dealer_hand, player_hand)
 
     if size(player_hand,1) == 2 && size(dealer_hand,1) == 2
         if player_total == 21 && dealer_total == 21
-            write(p.socket, "Both you and the dealer have a black_jack! Congratulations!\n")
+            print_dict(p, "black_jack_0")
             return true
         elseif player_total == 21
-            write(p.socket, "You have a black_jack! Congratulations!\n")
+            print_dict(p, "black_jack_1")
             p.balance += bet ÷ 2
             return true
         elseif dealer_total == 21
-            write(p.socket, "The dealer has a black_jack! Better luck next time!\n")
+            print_dict(p, "black_jack_2")
             p.balance -= bet
             return true
         end
@@ -75,20 +75,20 @@ function evaluate(p :: Player, bet, dealer_hand, player_hand)
     player_total = total_value(player_hand)
 
     if dealer_total > player_total
-        write(p.socket, "The dealer wins with $(show_cards(dealer_hand)) against your $(show_cards(player_hand)). Better luck next time!\n")
+        write(p.socket, "The dealer wins with $(show_cards(dealer_hand)) against your $(show_cards(player_hand)).\nBetter luck next time!\n")
         p.balance -= bet
     elseif dealer_total < player_total
-        write(p.socket, "You win with $(show_cards(player_hand)) against the dealers $(show_cards(dealer_hand)). Congratulations!\n")
+        write(p.socket, "You win with $(show_cards(player_hand)) against the dealers $(show_cards(dealer_hand)).\nCongratulations!\n")
         p.balance += bet
     else
-        write(p.socket, "A standoff! The dealers $(show_cards(dealer_hand)) against your $(show_cards(player_hand)).\n")
+        write(p.socket, "A standoff! The dealers $(show_cards(dealer_hand)) against your $(show_cards(player_hand)).\nWell played!\n")
     end
 end
 
 function play_black_jack(p::Player)
     bet = 0
     while true
-        write(p.socket, "How much are you willing to bet?\n")
+        print_dict(p, "black_jack_3")
         printBalance(p)
         s = readline(p.socket)
 
@@ -97,10 +97,10 @@ function play_black_jack(p::Player)
             print_dict(p, "repeat")
             continue
         elseif bet > p.balance
-            write(p.socket, "I am really sorry but you do not have that many chips left..\n")
+            print_dict(p, "black_jack_4")
             continue
         elseif bet == 0
-            write(p.socket, "Sorry but this is not a childs game. You can leave now.\n")
+            print_dict(p, "black_jack_5")
             p.status = reception
             return
         else
@@ -122,26 +122,26 @@ function play_black_jack(p::Player)
     end
 
     choice = "s"
-    write(p.socket, "Do you want to hit[h] or stand[s]?\n")
+    print_dict(p, "black_jack_6")
     choice = readline(p.socket)
     while choice != "s"
         if choice == "h"
             hit(player_hand, deck)
             write(p.socket, "You now hold: $(show_cards(player_hand))\n")
-            if(total_value(player_hand) > 21)
-                write(p.socket, "You busted.. Better luck next time!\n")
+            if total_value(player_hand) > 21
+                print_dict(p, "black_jack_7")
                 p.balance -= bet
                 return
             end
         else
-            write(p.socket, "Pardon me, could you repeat that please?\n")
+            print_dict(p, "repeat")
         end
 
-        write(p.socket, "Do you want to hit[h] or stand[s]?\n")
+        print_dict(p, "black_jack_6")
         choice = readline(p.socket)
     end
     print_dict(p, "spacer")
-    write(p.socket, "You decided to stand, the dealer continues their play..\n")
+    print_dict(p, "black_jack_8")
 
     write(p.socket, "The dealer shows: $(show_cards(dealer_hand))\n")
     dealer_total = total_value(dealer_hand)
@@ -150,7 +150,7 @@ function play_black_jack(p::Player)
         write(p.socket, "The dealer shows: $(show_cards(dealer_hand))\n")
         dealer_total = total_value(dealer_hand)
         if dealer_total > 21
-            write(p.socket, "The dealer busted.. Congratulations!\n")
+            print_dict(p, "black_jack_9")
             p.balance += bet
             return
         end

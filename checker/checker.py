@@ -36,7 +36,7 @@ class CasinoChecker(BaseChecker):
     debug_print = True
     flag_count = 2
     noise_count = 1
-    havoc_count = 0
+    havoc_count = 2
 
     balance = 0
 
@@ -272,7 +272,7 @@ class CasinoChecker(BaseChecker):
         t.write('%d\n' %(amount))
         self.readline_expect_multiline(t, string_dictionary["withdraw_3"])
         self.readline_expect_multiline(t, string_dictionary["spacer"])
-        
+
         self.debug("reading the captcha")
         try:
             captcha = t.read_until(string_dictionary["spacer"] + "\n")
@@ -281,7 +281,7 @@ class CasinoChecker(BaseChecker):
             self.debug("something went wrong while trying to read the captcha..")
             self.debug("%s" %(e))
             raise BrokenServiceException("withdraw_chips - Exception catched; Flag ID: " + str(self.flag_idx))
-        
+
         self.debug("\n%s" %(captcha))
         self.debug("calculating captcha")
         sum = 0
@@ -298,7 +298,7 @@ class CasinoChecker(BaseChecker):
                 sum += 14
             elif c.isdigit():
                 sum += int(c)
-        
+
         sum /= 3
         self.debug("the sum should be: %d" %(sum))
         t.write('%d\n' %(sum))
@@ -308,7 +308,7 @@ class CasinoChecker(BaseChecker):
         if self.balance > 10000:
             self.readline_expect_multiline(t, string_dictionary["withdraw_2"])
             self.balance = 10000
-        
+
         self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
         self.readline_expect_multiline(t, string_dictionary["reception_0"])
@@ -380,7 +380,7 @@ class CasinoChecker(BaseChecker):
             self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
             self.readline_expect_multiline(t, string_dictionary["roulette_1"])
             self.readline_expect_multiline(t, string_dictionary["roulette_2"])
-            
+
             if self.balance <= 0:
                 t.write("d\n")
                 self.readline_expect_multiline(t, string_dictionary["roulette_3"])
@@ -390,10 +390,10 @@ class CasinoChecker(BaseChecker):
             chips = random.randint(1, self.balance)
             target = random.choices(population=['red', 'black', '1-12', '13-24', '25-36', '1', '3' , '7', '36'], weights=[18,18,12,12,12,1,1,1,1])[0]
             t.write("%d %s\n" %(chips, target))
-            
+
             self.readline_expect_multiline(t, string_dictionary["roulette_2"])
             t.write("d\n")
-            
+
             self.readline_expect_multiline(t, string_dictionary["roulette_5"])
             t.read_until("Your total winnings are: ")
             winnings = int(t.read_until("\n").rstrip())
@@ -405,7 +405,7 @@ class CasinoChecker(BaseChecker):
                 self.readline_expect_multiline(t, string_dictionary["gamble_3"])
             else:
                 t.write("y\n")
-    
+
     def play_black_jack(self, t, rounds):
         self.debug("playing %d rounds of black_jack" %(rounds))
         t.write("black_jack\n")
@@ -420,7 +420,7 @@ class CasinoChecker(BaseChecker):
             self.readline_expect_multiline(t, string_dictionary["spacer"])
             self.readline_expect_multiline(t, string_dictionary["black_jack_3"])
             self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
-            
+
             if self.balance <= 0:
                 t.write("0\n")
                 self.readline_expect_multiline(t, string_dictionary["black_jack_5"])
@@ -452,7 +452,7 @@ class CasinoChecker(BaseChecker):
 
             if not natural:
                 t.write("s\n")
-                
+
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, string_dictionary["black_jack_8"])
 
@@ -488,7 +488,7 @@ class CasinoChecker(BaseChecker):
 
             table_identifier = tables[random.randint(1, len(tables) - 3)]
             t.write(table_identifier + "\n")
-            
+
         elif tables[0] == string_dictionary["table_3"]:
             self.debug("join_any_table - no tables available.. creating")
 
@@ -500,7 +500,7 @@ class CasinoChecker(BaseChecker):
                 minimum = "%d" %(random.randint(1,self.balance))
             passphrase = random.choice(['1234', 'password', 'password1', '1', 'test', '1234567890'])
             self.create_table(t, identifier, name, minimum, passphrase)
-            
+
         else:
             self.debug("join_any_table - got: %s expected: table_1 or table_3" %(tables[0]))
             raise(BrokenServiceException("join_any_table - join_table was tempered with."))
@@ -514,7 +514,7 @@ class CasinoChecker(BaseChecker):
         except:
             self.debug("create_table - the identifier is already in use (which is higly improbable)")
             raise(BrokenServiceException("create_table - the identifier is already in use (which is highly improbable"))
-        
+
         t.write(name + "\n")
         self.readline_expect_multiline(t, string_dictionary["table_8"])
         t.write(minimum + "\n")
@@ -682,41 +682,127 @@ class CasinoChecker(BaseChecker):
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
-            #randomly choose between playing a game (and withdrawing money), going to the bathroom or to the restaurant
-            c = random.choices(population=['b', 'w', 'r'], weights=[0, 1, 0])[0]
+            if self.flag_idx == 0:
+                #randomly choose between playing a game (and withdrawing money), going to the bathroom or to the restaurant
+                c = random.choices(population=['b', 'w', 'r'], weights=[0, 1, 0])[0]
 
-            if c == 'b':
-                pass
-            elif c == 'w':
-                self.debug('havoc - withdrawing money')
-                self.withdraw_chips(t, random.choice([1337,10000,1000,420,9999, random.randint(1,4), random.randint(5000,1000000)]))
-                self.debug("successfully withdrew chips, current balance is: %d" %(self.balance))
+                if c == 'b':
+                    pass
+                elif c == 'w':
+                    self.debug('havoc - withdrawing money')
+                    self.withdraw_chips(t, random.choice([1337,10000,1000,420,9999, random.randint(1,4), random.randint(5000,1000000)]))
+                    self.debug("successfully withdrew chips, current balance is: %d" %(self.balance))
 
-                self.goto_games(t)
+                    self.goto_games(t)
 
-                g = random.choices(population=['slot_machine', 'roulette', 'black_jack'], weights=[1, 1, 1])[0]
-                
-                if g == 'slot_machine':
-                    self.play_slot_machine(t, random.randint(1,5))
-                elif g == 'roulette':
-                    self.play_roulette(t, random.randint(1,5))
-                elif g == 'black_jack':
-                    self.play_black_jack(t, random.randint(1,5))
-            elif c == 'r':
-                pass
-            else:
-                self.debug("havoc - unknown choice : %s.. exiting" %(c))
-                return
+                    g = random.choices(population=['slot_machine', 'roulette', 'black_jack'], weights=[1, 1, 1])[0]
 
-            self.readline_expect_multiline(t, string_dictionary["spacer"])
-            self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
-            self.readline_expect_multiline(t, string_dictionary["reception_0"])
-            t.write("l\n")
-            self.readline_expect_multiline(t, string_dictionary["spacer"])
-            if self.balance < 0:
-                self.readline_expect_multiline(t, string_dictionary["debt_1"])
-            else:
-                self.readline_expect_multiline(t, string_dictionary["exit"])
+                    if g == 'slot_machine':
+                        self.play_slot_machine(t, random.randint(1,5))
+                    elif g == 'roulette':
+                        self.play_roulette(t, random.randint(1,5))
+                    elif g == 'black_jack':
+                        self.play_black_jack(t, random.randint(1,5))
+                elif c == 'r':
+                    pass
+                else:
+                    self.debug("havoc - unknown choice : %s.. exiting" %(c))
+                    return
+
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
+                t.write("l\n")
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                if self.balance < 0:
+                    self.readline_expect_multiline(t, string_dictionary["debt_1"])
+                else:
+                    self.readline_expect_multiline(t, string_dictionary["exit"])
+
+            if self.flag_idx == 1:
+                t.write("r\n")
+                self.readline_expect_multiline(t, string_dictionary["restaurant_intro"])
+                t.write("🧀\n".encode("utf-8"))
+                self.readline_expect_multiline(t, string_dictionary["restaurant_cheese"])
+                r = t.read_until("\n")[:-1]
+                try:
+                    self.debug("Starting to work on the found notes")
+                    self.debug("Trying to load notes as JSON")
+                    notes = json.loads(r.decode('utf-8'))
+                    self.debug("Notes successfully loaded as JSON")
+
+                    if len(notes) == notes:
+                        flag_dimension = random.randint(-pow(2,31), pow(2,31))
+                        self.debug("Empty notes - Generated random dimension: ", dim)
+                    else:
+                        #TODO: adjust to round
+                        difference = self.round - self.flag_round
+                        self.debug("Difference between round and flag_round is:" + str(difference))
+
+                        flag_dimension = notes[difference]
+                        self.debug("Havoc dimension: " + str(dimension))
+                except Exception as e:
+                    self.debug(e)
+                    raise BrokenServiceException("Notes Error")
+                t.write("l\n")
+
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: 0")
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
+
+                self.goto_cryptomat(t)
+
+                #figure out code
+                fool_dimension = random.randint(-pow(2,31), pow(2,31))
+
+                code = "CASINO_ROYALE"
+
+                x = fool_dimension % len(code)+1
+                code = code[x:len(code)] + code[0:x]
+
+                t.write("u\n")
+                self.readline_expect_multiline(p, string_dictionary["cryptomat_1"])
+                t.write(code+"\n")
+                self.readline_expect_multiline(p, string_dictionary["cryptomat_0"])
+                t.write("🕐\n".encode("utf-8"))
+                self.debug("Setting dimension: " + str(dimension))
+                t.write(str(fool_dimension)+"\n")
+
+                t.write("g\n")
+                self.readline_expect_multiline(p, string_dictionary["crpytomat_generating_token"])
+                self.readline_expect_multiline(p, string_dictionary["cryptomat_get_token"])
+
+                t.write("l\n")
+
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: 0")
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
+
+                t.write("r\n")
+                self.readline_expect_multiline(t, string_dictionary["restaurant_intro"])
+                t.write("c\n")
+                self.readline_expect_multiline(t, string_dictionary["restaurant_counter"])
+                self.readline_expect_multiline(t, string_dictionary["restaurant_menu"])
+
+                t.write("c\n")
+                self.readline_expect_multiline(t, string_dictionary["restaurant_casino_royale"])
+
+                t.write("l\n")
+
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: 0")
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
+
+                t.write("b\n")
+
+                self.readline_expect_multiline(t, string_dictionary["bathroom_diarrhea"])
+
+                t.write("r\n")
+
+                self.readline_expect_multiline(t, string_dictionary["bathroom_stall_walls"])
+                hash_msg = t.read_until("\n")[:-1].decode('utf-8')
+                if len(json.loads(hash_msg)) != 16:
+                    raise BrokenServiceException("Hash message too small")
 
         except Exception as e:
             self.debug("havoc - Exception catched; Havoc ID: " + str(self.flag_idx))

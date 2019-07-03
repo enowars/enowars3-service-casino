@@ -13,14 +13,16 @@ services:
      - MONGO_USER=ipv6islove
      - MONGO_PASSWORD=dockerislove
 
-    labels:
-     - "traefik.enable=true"
-     - "traefik.backend=casino-checker"
-     - "traefik.docker.network=enoverlay"
-     - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
-     - "traefik.port=3031"
-    replicas: 1
-  casino-db:
+
+    deploy:
+      replicas: 1
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=casino-checker"
+        - "traefik.docker.network=enoverlay"
+        - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
+        - "traefik.port=3031"
+casino-db:
     image: mongo
     networks:
       - enoverlay

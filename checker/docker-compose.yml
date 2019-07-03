@@ -22,7 +22,7 @@ services:
         - "traefik.docker.network=enoverlay"
         - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
         - "traefik.port=3031"
-casino-db:
+  casino-db:
     image: mongo
     networks:
       - enoverlay
@@ -46,3 +46,4 @@ networks:
     external: true
 volumes:
   casino_db_data:
+

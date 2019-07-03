@@ -151,6 +151,8 @@ end
 ####################################
 ####################################
 
+DEBUG = false
+
 server = listen(IPv6(0),6969)
 println("Waiting for people to enter the casino..")
 while true
@@ -160,7 +162,14 @@ while true
         try
             main(socket)
         catch err
-            println("connection ended with $err")
+            if DEBUG
+                bt = catch_backtrace()
+                println()
+                showerror(stderr, err, bt)
+            else
+                println("connection ended with $err")
+            end
+
         end
     end
 end

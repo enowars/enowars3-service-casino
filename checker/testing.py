@@ -4,9 +4,9 @@ import os
 
 flag_count = 2
 noise_count = 1
-havoc_count = 0
+havoc_count = 2
 
-rounds = 10
+rounds = 500
 
 address = "fd00:1337:1:420::1"
 nr_of_past_rounds_flag_check = 3
@@ -51,4 +51,4 @@ for round in range(rounds):
 	#havoc
 	mode = "havoc"
 	for havoc_id in range(havoc_count):
-		execCommand(round, "", round, havoc_id, mode)
+		execCommand(round, "foo", round, havoc_id, mode)

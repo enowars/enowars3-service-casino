@@ -688,6 +688,7 @@ class CasinoChecker(BaseChecker):
             raise(e)
         try:
             self.debug("connected to {}".format(self.address))
+
             self.intro(t)
 
             if self.flag_idx == 0:
@@ -748,7 +749,7 @@ class CasinoChecker(BaseChecker):
                         self.debug("Difference between round and flag_round is:" + str(difference))
 
                         flag_dimension = notes[difference]
-                        self.debug("Havoc dimension: " + str(dimension))
+                        self.debug("Havoc dimension: " + str(flag_dimension))
                 except Exception as e:
                     self.debug(e)
                     raise BrokenServiceException("Notes Error")
@@ -761,27 +762,33 @@ class CasinoChecker(BaseChecker):
                 self.goto_cryptomat(t)
 
                 #figure out code
-                fool_dimension = random.randint(-pow(2,31), pow(2,31))
+                fool_dimension = random.randint(-pow(2,31)+1, pow(2,31)-1)
+
+                self.debug("Fool dimension: " + str(fool_dimension))
 
                 code = "CASINO_ROYALE"
 
-                x = fool_dimension % len(code)+1
+                x = abs(fool_dimension) % len(code)+1
                 code = code[x:len(code)] + code[0:x]
 
+                self.debug("Using code: " + str(code))
+
                 t.write("u\n")
-                self.readline_expect_multiline(p, string_dictionary["cryptomat_1"])
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_1"])
                 t.write(code+"\n")
-                self.readline_expect_multiline(p, string_dictionary["cryptomat_0"])
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_0"])
                 t.write("🕐\n".encode("utf-8"))
-                self.debug("Setting dimension: " + str(dimension))
+                self.debug("Setting dimension: " + str(fool_dimension))
                 t.write(str(fool_dimension)+"\n")
 
                 t.write("g\n")
-                self.readline_expect_multiline(p, string_dictionary["crpytomat_generating_token"])
-                self.readline_expect_multiline(p, string_dictionary["cryptomat_get_token"])
+                self.readline_expect_multiline(t, string_dictionary["crpytomat_generating_token"])
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_get_token"])
 
                 t.write("l\n")
 
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_5"])
+                self.readline_expect_multiline(t, string_dictionary["bathroom_5"])
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, "Your balance is: 0")
                 self.readline_expect_multiline(t, string_dictionary["reception_0"])
@@ -794,7 +801,7 @@ class CasinoChecker(BaseChecker):
 
                 t.write("c\n")
                 self.readline_expect_multiline(t, string_dictionary["restaurant_casino_royale"])
-
+                self.readline_expect_multiline(t, string_dictionary["restaurant_intro"])
                 t.write("l\n")
 
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
@@ -803,6 +810,7 @@ class CasinoChecker(BaseChecker):
 
                 t.write("b\n")
 
+                self.readline_expect_multiline(t, string_dictionary["reception_2"])
                 self.readline_expect_multiline(t, string_dictionary["bathroom_diarrhea"])
 
                 t.write("r\n")
@@ -811,6 +819,9 @@ class CasinoChecker(BaseChecker):
                 hash_msg = t.read_until("\n")[:-1].decode('utf-8')
                 if len(json.loads(hash_msg)) != 16:
                     raise BrokenServiceException("Hash message too small")
+
+            self.debug("Havoc success before closing")
+            t.close()
 
         except Exception as e:
             self.debug("havoc - Exception catched; Havoc ID: " + str(self.flag_idx))

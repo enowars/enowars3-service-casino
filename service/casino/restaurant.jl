@@ -23,7 +23,7 @@ function checkToken(p::Player, code::String)
 
     msg = AESCBC(enc_msg, cryptomaterial[1], cryptomaterial[2], false)
 
-    x = p.dimension % length(code)+1
+    x = abs(p.dimension) % length(code)+1
     code = string(code[x+1:length(code)], code[1:x])
 
     msg = String(msg)

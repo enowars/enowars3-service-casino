@@ -333,6 +333,9 @@ class CasinoChecker(BaseChecker):
                     weird_guy = True
                     chips = 1
                 else:
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_2"])
+                    t.write("\n")
+                    self.readline_expect_multiline(t, string_dictionary["gamble_4"])
                     return
             else:
                 weird_guy = False
@@ -355,10 +358,7 @@ class CasinoChecker(BaseChecker):
                 if self.balance < 0:
                     self.readline_expect_multiline(t, string_dictionary["debt_0"])
                     self.readline_expect_multiline(t, string_dictionary["gamble_4"])
-                    self.readline_expect_multiline(t, string_dictionary["spacer"])
-                    self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
-                    self.readline_expect_multiline(t, string_dictionary["reception_0"])
-                return
+                    return
 
             self.readline_expect_multiline(t, string_dictionary["gamble_2"])
             if rounds-1 == i:

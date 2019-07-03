@@ -19,6 +19,6 @@ COPY . .
 
 #ENTRYPOINT ["/bin/bash"]
 ENTRYPOINT [ "uwsgi", "--uid", "uwsgi", \
-               "--socket", "0.0.0.0:3031", \
+               "--socket", "[::]:3031", \
                "--protocol", "http", \
                "--ini", "/checker/uwsgi.ini" ]

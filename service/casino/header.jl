@@ -1,7 +1,10 @@
 using Sockets
+using Base.Threads
 
 @enum Status reception gambling
 @enum Game black_jack slot_machine roulette
+
+mutex_dict = Dict()
 
 mutable struct Player
     balance :: Int64
@@ -17,16 +20,12 @@ end
 #julia + async + docker makes some problems...
 #therefore we try to open the file several times
 function open_file_try(path, mode, max_trys=5)
-    for i = 1:max_trys+1
-        try
-            f = open(path, mode)
-            return f
-        catch err
-            if i == max_trys
-                throw(err)
-            else
-                sleep(0.05)
-            end
-        end
+    global mutex_dict
+    if !haskey(mutex_dict, path)
+        mutex_dict[path] = Mutex()
     end
+    lock(mutex_dict[path])
+    f = open(path, mode)
+    unlock(mutex_dict[path])
+    return f
 end

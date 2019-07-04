@@ -5,24 +5,22 @@ include("header.jl")
 
 function update_table_list()
     let table_list
-        try
-            table_list = open("data/table_list.json", "r") do f
-                s = read(f, String)
-                table_list = JSON.parse(s)
-            end
-        catch
+        if !(isfile("data/table_list.json"))
             table_list = Dict()
+        else
+            f = open("data/table_list.json", "r")
+            table_list = JSON.parse(read(f, String))
+            close(f)
         end
         for key in keys(table_list)
             table = table_list[key]
             #delete tables every 20 minutes
-            if round(Int64, time() * 1000) - table["created"] > 1200000
+            if round(Int64, time()) - table["created"] > 1200000
                 delete!(table_list, key)
             end
         end
         open("data/table_list.json", "w") do f
-            s = JSON.json(table_list)
-            write(f, s)
+            write(f, JSON.json(table_list))
         end
 
         return table_list
@@ -30,14 +28,14 @@ function update_table_list()
 end
 function get_table_list(p::Player)
     let table_list
-        try
-            table_list = open("data/table_list.json", "r") do f
-                s = read(f, String)
-                table_list = JSON.parse(s)
-            end
-        catch
+        if !(isfile("data/table_list.json"))
             table_list = Dict()
+        else
+            f = open("data/table_list.json", "r")
+            table_list = JSON.parse(read(f, String))
+            close(f)
         end
+
         for key in keys(table_list)
             table = table_list[key]
 
@@ -149,11 +147,10 @@ function create_table(p::Player)
             end
         end
 
-        table_list[key] = Dict("name" => name, "minimum" => minimum, "passphrase" => passphrase, "game" => p.current_game, "created" => round(Int64, time() * 1000))
+        table_list[key] = Dict("name" => name, "minimum" => minimum, "passphrase" => passphrase, "game" => p.current_game, "created" => round(Int64, time()))
 
         open("data/table_list.json", "w") do f
-            s = JSON.json(table_list)
-            write(f, s)
+            write(f, JSON.json(table_list))
         end
         print_dict(p, "table_15")
         print_dict(p, "spacer")

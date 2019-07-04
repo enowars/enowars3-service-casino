@@ -163,9 +163,13 @@ while true
             main(socket)
         catch err
             if DEBUG
-                bt = catch_backtrace()
-                println()
-                showerror(stderr, err, bt)
+                if isa(err, IOERROR)
+                    println("connection ended with $err")
+                else
+                    bt = catch_backtrace()
+                    println()
+                    showerror(stderr, err, bt)
+                end
             else
                 println("connection ended with $err")
             end

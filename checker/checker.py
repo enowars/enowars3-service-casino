@@ -76,6 +76,7 @@ class CasinoChecker(BaseChecker):
                 self.debug("Trying to load notes as JSON")
                 notes = json.loads(r.decode('utf-8'))
                 self.debug("Notes successfully loaded as JSON")
+                self.debug("Notes: " + str(notes))
                 #TODO: adjust to round
 
                 difference = self.round - self.flag_round

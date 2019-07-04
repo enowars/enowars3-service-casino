@@ -151,7 +151,7 @@ end
 ####################################
 ####################################
 
-DEBUG = false
+DEBUG = true
 
 server = listen(IPv6(0),6969)
 println("Waiting for people to enter the casino..")
@@ -163,7 +163,7 @@ while true
             main(socket)
         catch err
             if DEBUG
-                if isa(err, IOERROR)
+                if isa(err, Base.IOError) || isa(err, ArgumentError)
                     println("connection ended with $err")
                 else
                     bt = catch_backtrace()

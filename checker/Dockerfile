@@ -3,7 +3,7 @@ LABEL maintainer="ENOFLAG <mail@enoflag.de>"
 
 # Install python3 and uswgi
 RUN apt-get update
-RUN apt-get install -y nginx git
+RUN apt-get install -y git
 RUN apt-get install wget -y
 
 

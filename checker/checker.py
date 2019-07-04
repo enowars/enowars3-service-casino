@@ -678,7 +678,8 @@ class CasinoChecker(BaseChecker):
                 for i in range(0,2):
                     self.debug("AES message Nr: " + str(i))
                     if i == 1:
-                        known_plain = "ATOM-BOMB-CODE-START"
+                        known_plain = "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL"
+
 
 
         except Exception as e:

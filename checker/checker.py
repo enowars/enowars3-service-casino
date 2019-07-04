@@ -6,6 +6,7 @@ import random
 import string
 import time
 import os
+import binascii
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
@@ -14,8 +15,6 @@ from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 from enochecker import BaseChecker, BrokenServiceException, run
 from enochecker.utils import *
-
-#session = requests.Session()
 
 def bytes_arr_to_int_arr(bytes_arr):
     result = []
@@ -30,6 +29,10 @@ def generate_random_string(length = 3):
     alphabet = string.ascii_letters + string.digits
     return ''.join(random.choice(alphabet) for i in range(length))
 
+def xorRange(src1, src2, dst, size):
+    for i in range(0, size):
+        dst[i] = src1[i] ^ src2[i]
+    return dst[:size]
 
 
 class CasinoChecker(BaseChecker):
@@ -144,11 +147,11 @@ class CasinoChecker(BaseChecker):
                 raise BrokenServiceException("decrypting of message failed")
                 print("Decrypted message: ", decrypted_msg)
             if i == 0:
-                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
+                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
             elif i == 1:
                 assert_equals(decrypted_msg , self.flag, autobyteify=True)
             elif i == 2:
-                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:END::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
 
 
     def decrypt_aes(self, key, iv, enc_msg, mode):
@@ -641,6 +644,97 @@ class CasinoChecker(BaseChecker):
         except Exception as e:
             self.debug(e)
             raise(e)
+        try:
+            self.debug("connected to {}".format(self.address))
+            self.intro(t)
+            if self.flag_idx == 0:
+                pass
+            elif self.flag_idx == 1:
+                self.goto_cryptomat(t)
+                #get note
+                t.write("◈\n".encode("utf-8"))
+                #retrieve correct dimension
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
+                r = t.read_until("\n")[:-1]
+                try:
+                    self.debug("Starting to work on the found notes")
+                    self.debug("Trying to load notes as JSON")
+                    notes = json.loads(r.decode('utf-8'))
+                    self.debug("Notes successfully loaded as JSON")
+                    #TODO: adjust to round
+
+                    difference = self.round - self.flag_round
+                    self.debug("Difference between roung and flag_round is:" + str(difference))
+                    dimension = notes[difference]
+                    self.debug("Flag dimension: " + str(dimension))
+                except Exception as e:
+                    self.debug(e)
+                    raise BrokenServiceException("Notes Error")
+                #set dimension
+                t.write("🕐\n".encode("utf-8"))
+                self.debug("Setting dimension: " + str(dimension))
+                t.write(str(dimension)+"\n")
+
+                t.write("3\n")
+
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
+                self.debug("Starting to work on AES messages")
+
+                for i in range(0,2):
+                    self.debug("AES message Nr: " + str(i))
+                    self.readline_expect_multiline(t, "Message:")
+                    self.debug("Starting to read AES message")
+                    msg = t.read_until("\n")[:-1].decode('utf-8')
+                    self.debug(msg)
+
+                    self.debug("Starting the decode the message function. Trying to load message as JSON")
+                    data = json.loads(msg)
+                    self.debug("Successfully loaded as JSON.")
+
+                    self.debug("Splitting the JSON into message part and converting them to Bytes...")
+                    #convert int list to bytes
+                    enc_msg_aes = bytes(data[0])
+                    self.debug("Encrypted message AES okay")
+
+
+                    self.debug("Encrypted AES msg:" + str(enc_msg_aes))
+
+                    self.debug("Converting AES ms:" + str(enc_msg_aes))
+
+                    enc_msg_aes = bytearray(enc_msg_aes)
+                    if i == 0:
+                        known_plain = "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL"
+                        self.debug("Loaded known plain: " + known_plain)
+                        know_plain_bytes = bytearray()
+                        know_plain_bytes.extend(map(ord, known_plain))
+                        self.debug("Converted known plain to bytearray")
+
+
+                        keystream = bytearray(len(known_plain))
+                        keystream = xorRange(know_plain_bytes, enc_msg_aes, keystream, len(known_plain))
+                        self.debug("Extracted keystream: " + str(binascii.hexlify(keystream)))
+
+                    elif i == 1:
+                        hacked_plain = bytearray(len(self.flag))
+                        hacked_plain = xorRange(keystream, enc_msg_aes, hacked_plain, len(self.flag))
+                        self.debug("Hacked plain: " + str(binascii.hexlify(hacked_plain)))
+
+
+                self.debug("Plain flag: " + self.flag)
+                flag_bytes = bytearray()
+                flag_bytes.extend(map(ord, self.flag))
+                self.debug("Flag Bytes: " + str(binascii.hexlify(flag_bytes)))
+
+                if hacked_plain != flag_bytes:
+                    raise BrokenServiceException("Hacked plain is not equal to Flag")
+
+            self.debug("Exploit executed succesfully")
+
+
+        except Exception as e:
+            self.debug("exploit - Exception catched; Exploit ID: " + str(self.flag_idx))
+            self.debug(e)
+            raise BrokenServiceException("exploit did not work; Exploit ID: " + str(self.flag_idx))
 
     def putnoise(self):
         try:

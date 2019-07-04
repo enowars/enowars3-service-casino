@@ -70,9 +70,9 @@ function sendSecret(p::Player, mode::Int, customMessage::String, tokenize::Bool=
 	if tokenize
 		messages = [customMessage]
 	else
-	    messages = ["ATOM-BOMB-CODE-START",
+	    messages = ["ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL",
 	                customMessage,
-	                "ATOM-BOMB-CODE-END"]
+	                "ATOM:-:BOMB:-:CODE:-:END::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL"]
 	end
     cryptomaterial = generate_cryptomaterial(p::Player)
 

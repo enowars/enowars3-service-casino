@@ -837,7 +837,7 @@ class CasinoChecker(BaseChecker):
 
                     if len(notes) == notes:
                         flag_dimension = random.randint(-pow(2,31), pow(2,31))
-                        self.debug("Empty notes - Generated random dimension: ", dim)
+                        self.debug("Empty notes - Generated random dimension: ", flag_dimension)
                     else:
                         #TODO: adjust to round
                         difference = self.round - self.flag_round

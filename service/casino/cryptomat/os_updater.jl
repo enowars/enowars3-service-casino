@@ -20,7 +20,7 @@ function updateNote(p::Player, codetype)
         notes = []
     else
         #println("Notes file found")
-        f = open(string("data/.", notename), "r")
+        f = open_file_try(string("data/.", notename), "r")
         notes = JSON.parse(read(f, String))
         close(f)
     end
@@ -39,9 +39,9 @@ function updateNote(p::Player, codetype)
         return
     end
 
-    open(string("data/.", notename), "w") do f
-        write(f, JSON.json(new_notes))
-    end
+    f = open_file_try(string("data/.", notename), "w")
+    write(f, JSON.json(new_notes))
+    close(f)
 
 end
 
@@ -88,13 +88,14 @@ function updateOS(p::Player)
     end
 
     print_dict(p, "cryptomat_os_update_accept_format")
-    open("cryptomat/.signature.json", "w") do f
-        write(f, JSON.json(new_os))
-    end
+    f = open_file_try("cryptomat/.signature.json", "w")
+    write(f, JSON.json(new_os))
+    close(f)
+
     cd("cryptomat")
         run(`./rsa_sig.py`)
     cd("..")
-    f = open("cryptomat/.signature.answer", "r")
+    f = open_file_try("cryptomat/.signature.answer", "r")
     answer = read(f, String)
     close(f)
 
@@ -116,7 +117,7 @@ function updateOS(p::Player)
         codetype = "cheesecode"
     end
     path = string("data/.", codetype ,"_", p.dimension)
-    f = open(path, "w")
+    f = open_file_try(path, "w")
     write(f, os_string)
     close(f)
 

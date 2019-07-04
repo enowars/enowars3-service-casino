@@ -34,7 +34,7 @@ function use_cryptomat(p::Player)
                 print_dict(p, "cryptomat_2")
             else
                 print_dict(p, "cryptomat_3")
-                f = open("data/.note", "r")
+                f = open_file_try("data/.note", "r")
                 write(p.socket, "$(read(f, String))\n")
                 close(f)
             end

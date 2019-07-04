@@ -33,7 +33,7 @@ function code(p::Player)
     if !(isfile(path))
         code = "CASINO_ROYALE"
     else
-        f = open(path, "r")
+        f = open_file_try(path, "r")
         code = read(f, String)
         close(f)
     end

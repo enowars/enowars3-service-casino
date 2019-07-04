@@ -8,7 +8,7 @@ function update_table_list()
         if !(isfile("data/table_list.json"))
             table_list = Dict()
         else
-            f = open("data/table_list.json", "r")
+            f = open_file_try("data/table_list.json", "r")
             table_list = JSON.parse(read(f, String))
             close(f)
         end
@@ -19,9 +19,9 @@ function update_table_list()
                 delete!(table_list, key)
             end
         end
-        open("data/table_list.json", "w") do f
-            write(f, JSON.json(table_list))
-        end
+        f = open_file_try("data/table_list.json", "w")
+        write(f, JSON.json(table_list))
+        close(f)
 
         return table_list
     end
@@ -31,7 +31,7 @@ function get_table_list(p::Player)
         if !(isfile("data/table_list.json"))
             table_list = Dict()
         else
-            f = open("data/table_list.json", "r")
+            f = open_file_try("data/table_list.json", "r")
             table_list = JSON.parse(read(f, String))
             close(f)
         end
@@ -149,9 +149,10 @@ function create_table(p::Player)
 
         table_list[key] = Dict("name" => name, "minimum" => minimum, "passphrase" => passphrase, "game" => p.current_game, "created" => round(Int64, time()))
 
-        open("data/table_list.json", "w") do f
-            write(f, JSON.json(table_list))
-        end
+        f = open_file_try("data/table_list.json", "w")
+        write(f, JSON.json(table_list))
+        close(f)
+
         print_dict(p, "table_15")
         print_dict(p, "spacer")
 

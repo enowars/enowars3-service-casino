@@ -28,4 +28,5 @@ function open_file_try(path, mode, max_trys=5)
                 sleep(0.05)
             end
         end
+    end
 end

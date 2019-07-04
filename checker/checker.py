@@ -573,7 +573,7 @@ class CasinoChecker(BaseChecker):
             #print(self.flag_round)
             self.debug("Putflag success before closing")
             t.close()
-        except:
+        except Exception as e:
             self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
             self.debug(e)
             raise BrokenServiceException("putflag did not work; Flag ID: " + str(self.flag_idx))

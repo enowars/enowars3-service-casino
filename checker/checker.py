@@ -109,7 +109,7 @@ class CasinoChecker(BaseChecker):
 
                 difference = self.round - self.flag_round
                 self.debug("Difference between roung and flag_round is:" + str(difference))
-history.html?round=613
+
                 dimension = notes[difference]
                 self.debug("Flag dimension: " + str(dimension))
             except Exception as e:
@@ -133,7 +133,7 @@ history.html?round=613
             self.debug("AES message Nr: " + str(i))
             #self.readline_expect_multiline(t, "AES CTR:")
             self.readline_expect_multiline(t, "Message:")
-            self.debug("Starting to read AES message")history.html?round=613
+            self.debug("Starting to read AES message")
             msg = t.read_until("\n")[:-1].decode('utf-8')
             self.debug(msg)
 
@@ -218,7 +218,7 @@ history.html?round=613
         msg_bytes.extend(map(ord, msg))
         hash = SHA256.new(msg_bytes)
         signature = pkcs1_15.new(key).sign(hash)
-history.html?round=613
+
         hash_list = []
         #convert back to int list
 
@@ -239,7 +239,7 @@ history.html?round=613
                 telnet_session.readline_expect(m)
 
     def intro(self, t):
-        self.balance = 0history.html?round=613
+        self.balance = 0
         self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, string_dictionary["welcome"])
         self.readline_expect_multiline(t, string_dictionary["spacer"])
@@ -268,7 +268,7 @@ history.html?round=613
 
     def withdraw_chips(self, t, amount):
         t.write("w\n")
-        self.readline_expect_multiline(t, string_dictionarhistory.html?round=613y["spacer"])
+        self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, string_dictionary["withdraw_0"])
 
         t.write('%d\n' %(amount))
@@ -286,7 +286,7 @@ history.html?round=613
 
         self.debug("\n%s" %(captcha))
         self.debug("calculating captcha")
-        sum = 0history.html?round=613
+        sum = 0
         for c in captcha:
             if c == 'T':
                 sum += 10
@@ -374,7 +374,7 @@ history.html?round=613
         self.readline_expect_multiline(t, string_dictionary["spacer"])
         self.readline_expect_multiline(t, string_dictionary["table_0"])
 
-        self.join_any_table(t)history.html?round=613
+        self.join_any_table(t)
 
         t.read_until("The dealer smiles at you and slightly nods his head as a greeting.\n")
         self.readline_expect_multiline(t, string_dictionary["roulette_welcome"])
@@ -400,7 +400,7 @@ history.html?round=613
             t.write("d\n")
 
             self.readline_expect_multiline(t, string_dictionary["roulette_5"])
-            t.read_until("Your total winnings are: ")history.html?round=613
+            t.read_until("Your total winnings are: ")
             winnings = int(t.read_until("\n").rstrip())
             self.balance += winnings
 
@@ -419,7 +419,7 @@ history.html?round=613
 
         self.join_any_table(t)
 
-        t.read_until("The dealer smiles at you and slightlhistory.html?round=613y nods his head as a greeting.\n")
+        t.read_until("The dealer smiles at you and slightly nods his head as a greeting.\n")
         self.readline_expect_multiline(t, string_dictionary["black_jack_welcome"])
 
         for i in range(0, rounds):
@@ -472,7 +472,7 @@ history.html?round=613
                 elif result[len(result) - 3] == 'Well played!':
                     pass
                 else:
-                    self.debug("black_jack - got: %s expechistory.html?round=613ted: \"Better luck next time!\", \"Congratulations!\" or \"Well played!\"." %(line))
+                    self.debug("black_jack - got: %s expected: \"Better luck next time!\", \"Congratulations!\" or \"Well played!\"." %(line))
                     raise(BrokenServiceException("black_jack - you either win, lose or standoff."))
             else:
                 self.readline_expect_multiline(t, string_dictionary["gamble_2"])
@@ -492,7 +492,7 @@ history.html?round=613
         if tables[0] == string_dictionary["table_1"]:
             self.debug("join_any_table - tables available.. joining")
 
-            table_identifier = tables[random.randint(1, lehistory.html?round=613n(tables) - 3)]
+            table_identifier = tables[random.randint(1, len(tables) - 3)]
             t.write(table_identifier + "\n")
 
         elif tables[0] == string_dictionary["table_3"]:
@@ -516,7 +516,7 @@ history.html?round=613
         self.readline_expect_multiline(t, string_dictionary["table_12"])
         t.write(identifier + "\n")
         try:
-            self.readline_expect_multiline(t, string_dictihistory.html?round=613onary["table_6"])
+            self.readline_expect_multiline(t, string_dictionary["table_6"])
         except:
             self.debug("create_table - the identifier is already in use (which is higly improbable)")
             raise(BrokenServiceException("create_table - the identifier is already in use (which is highly improbable"))
@@ -540,7 +540,7 @@ history.html?round=613
 
     port = 6969  # default port to send requests to.
 
-    def putflag(self):history.html?round=613
+    def putflag(self):
         try:
             t = self.connect()
         except Exception as e:
@@ -569,7 +569,7 @@ history.html?round=613
             #TODO: better leaving
             #print(self.flag_round)
             self.debug("Putflag success before closing")
-            t.close()history.html?round=613
+            t.close()
         except:
             self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
             self.debug(e)
@@ -597,7 +597,7 @@ history.html?round=613
                 #join a table
                 t.write("j\n")
                 #self.readline_expect_multiline(t, string_dictionary[])
-                try:history.html?round=613
+                try:
                     identifier, minimum, passphrase = self.team_db[self.flag]
                 except Exception as e:
                     self.debug("getflag - flag was not found in the database..")
@@ -619,7 +619,7 @@ history.html?round=613
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, "Your balance is: 0")
                 self.readline_expect_multiline(t, string_dictionary["reception_0"])
-history.html?round=613
+
                 t.write("l\n")
                 self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, string_dictionary["exit"])
@@ -655,7 +655,7 @@ history.html?round=613
             raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
 
     def putnoise(self):
-        try:
+        try:exploit
             t = self.connect()
         except Exception as e:
             self.debug(e)
@@ -751,7 +751,7 @@ history.html?round=613
                     self.debug("Starting to work on the found notes")
                     self.debug("Trying to load notes as JSON")
                     notes = json.loads(r.decode('utf-8'))
-                    self.debug("Notes successfully loadehistory.html?round=613d as JSON")
+                    self.debug("Notes successfully loaded as JSON")
 
                     if len(notes) == notes:
                         flag_dimension = random.randint(-pow(2,31), pow(2,31))
@@ -768,7 +768,7 @@ history.html?round=613
                     raise BrokenServiceException("Notes Error")
                 t.write("l\n")
 
-                self.readline_expect_multiline(t, stringhistory.html?round=613_dictionary["spacer"])
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
                 self.readline_expect_multiline(t, "Your balance is: 0")
                 self.readline_expect_multiline(t, string_dictionary["reception_0"])
 

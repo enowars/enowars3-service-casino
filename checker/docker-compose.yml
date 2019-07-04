@@ -15,7 +15,7 @@ services:
 
 
     deploy:
-      replicas: 1
+      replicas: 3
       labels:
         - "traefik.enable=true"
         - "traefik.backend=casino-checker"

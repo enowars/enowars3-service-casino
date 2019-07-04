@@ -151,8 +151,18 @@ end
 ####################################
 ####################################
 
+function preload_aesSeed()
+    f = open_file_try("assets/aes.seed", "r")
+    aesSeed = read(f)
+    close(f)
+    return aesSeed
+end
+
 DEBUG = true
 
+
+
+aesSeed = preload_aesSeed()
 server = listen(IPv6(0),6969)
 println("Waiting for people to enter the casino..")
 while true

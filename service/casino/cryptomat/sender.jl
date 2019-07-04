@@ -33,9 +33,7 @@ end
 function generate_cryptomaterial(p::Player)
     cryptomaterial = Array{Array{UInt8,1}, 1}(undef, 2)
 
-	f = open_file_try("assets/aes.seed", "r")
-    aesSeed = read(f)
-    close(f)
+	global aesSeed
     key = md5(aesSeed)
     cryptomaterial[2] = rand(UInt8, 16)
 	cryptomaterial[2][9] = UInt8(0x00)

@@ -1,3 +1,3 @@
 # Casino
 
-In the dystopian world you find a casino.
+In the dystopian world you find a casino. You heard rumors about it...

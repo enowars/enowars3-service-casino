@@ -6,6 +6,7 @@ import random
 import string
 import time
 import os
+import binascii
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.PublicKey import RSA
@@ -28,6 +29,10 @@ def generate_random_string(length = 3):
     alphabet = string.ascii_letters + string.digits
     return ''.join(random.choice(alphabet) for i in range(length))
 
+def xorRange(src1, src2, dst, size):
+    for i in range(0, size):
+        dst[i] = src1[i] ^ src2[i]
+    return dst[:size]
 
 
 class CasinoChecker(BaseChecker):
@@ -677,15 +682,59 @@ class CasinoChecker(BaseChecker):
 
                 for i in range(0,2):
                     self.debug("AES message Nr: " + str(i))
-                    if i == 1:
-                        known_plain = "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL"
+                    self.readline_expect_multiline(t, "Message:")
+                    self.debug("Starting to read AES message")
+                    msg = t.read_until("\n")[:-1].decode('utf-8')
+                    self.debug(msg)
 
+                    self.debug("Starting the decode the message function. Trying to load message as JSON")
+                    data = json.loads(msg)
+                    self.debug("Successfully loaded as JSON.")
+
+                    self.debug("Splitting the JSON into message part and converting them to Bytes...")
+                    #convert int list to bytes
+                    enc_msg_aes = bytes(data[0])
+                    self.debug("Encrypted message AES okay")
+
+
+                    self.debug("Encrypted AES msg:" + str(enc_msg_aes))
+
+                    self.debug("Converting AES ms:" + str(enc_msg_aes))
+
+                    enc_msg_aes = bytearray(enc_msg_aes)
+                    if i == 0:
+                        known_plain = "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL"
+                        self.debug("Loaded known plain: " + known_plain)
+                        know_plain_bytes = bytearray()
+                        know_plain_bytes.extend(map(ord, known_plain))
+                        self.debug("Converted known plain to bytearray")
+
+
+                        keystream = bytearray(len(known_plain))
+                        keystream = xorRange(know_plain_bytes, enc_msg_aes, keystream, len(known_plain))
+                        self.debug("Extracted keystream: " + str(binascii.hexlify(keystream)))
+
+                    elif i == 1:
+                        hacked_plain = bytearray(len(self.flag))
+                        hacked_plain = xorRange(keystream, enc_msg_aes, hacked_plain, len(self.flag))
+                        self.debug("Hacked plain: " + str(binascii.hexlify(hacked_plain)))
+
+
+                self.debug("Plain flag: " + self.flag)
+                flag_bytes = bytearray()
+                flag_bytes.extend(map(ord, self.flag))
+                self.debug("Flag Bytes: " + str(binascii.hexlify(flag_bytes)))
+
+                if hacked_plain != flag_bytes:
+                    raise BrokenServiceException("Hacked plain is not equal to Flag")
+
+            self.debug("Exploit executed succesfully")
 
 
         except Exception as e:
-            self.debug("putnoise - Exception catched; Noise ID: " + str(self.flag_idx))
+            self.debug("exploit - Exception catched; Exploit ID: " + str(self.flag_idx))
             self.debug(e)
-            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
+            raise BrokenServiceException("exploit did not work; Exploit ID: " + str(self.flag_idx))
 
     def putnoise(self):
         try:

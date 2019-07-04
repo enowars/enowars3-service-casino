@@ -18,7 +18,7 @@ mutable struct Player
 end
 
 #julia + async + docker makes some problems...
-#therefore we try to open the file several times
+#therefore we try use a mutex
 function open_file_try(path, mode, max_trys=5)
     global mutex_dict
     if !haskey(mutex_dict, path)

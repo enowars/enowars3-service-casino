@@ -2,6 +2,7 @@ import JSON
 using Sockets
 include("header.jl")
 
+#global table_list
 table_list = Dict()
 
 function join_table(p::Player)

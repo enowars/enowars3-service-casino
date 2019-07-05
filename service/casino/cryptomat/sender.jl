@@ -78,16 +78,20 @@ function sendSecret(p::Player, mode::Int, customMessage::String, tokenize::Bool=
     for cur_message in messages
         #println("\n", cur_message)
         enc_Msg = encryptMessage(p, mode, cur_message, cryptomaterial)
-        f = open_file_try("cryptomat/.aeskey.json", "w")
-        write(f, JSON.json(cryptomaterial[1]))
-        close(f)
-		cd("cryptomat")
-        	run(`./rsa.py`)
-		cd("..")
-        #TODO: check if file exists?
-        f = open_file_try("cryptomat/.aeskey_enc.json", "r")
-        enc_key = JSON.parse(read(f, String), inttype=UInt8)
-        close(f)
+
+		crypto_json = JSON.json(cryptomaterial[1])
+		out = Pipe()
+		try
+			run(pipeline(`./cryptomat/rsa.py $crypto_json`, stdout=out))
+		catch
+			close(out.in)
+			write(p.socket, "Error\n")
+			return
+		end
+		close(out.in)
+		enc_key = JSON.parse(String(read(out)), inttype=UInt8)
+
+
         full_Msg = [enc_Msg, cryptomaterial[2], enc_key]
 		if tokenize
 			return JSON.json(full_Msg)

@@ -88,19 +88,12 @@ function updateOS(p::Player)
     end
 
     print_dict(p, "cryptomat_os_update_accept_format")
-    f = open_file_try("cryptomat/.signature.json", "w")
-    write(f, JSON.json(new_os))
-    close(f)
 
-    cd("cryptomat")
-        run(`./rsa_sig.py`)
-    cd("..")
-    f = open_file_try("cryptomat/.signature.answer", "r")
-    answer = read(f, String)
-    close(f)
+    new_os_json = JSON.json(new_os)
 
-    #println(answer)
-    if answer != "+"
+    try
+        proc = run(`./cryptomat/rsa_sig.py $new_os_json`)
+    catch
         write(p.socket, "Not accepting this signature\n")
         return
     end

@@ -3,12 +3,22 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
 import json
+import sys
 
-with open("../assets/public.pem") as aeskey_file:
+file_mode = False
+
+if len(sys.argv) == 1:
+	file_mode = True
+
+with open("assets/public.pem") as aeskey_file:
 	key = RSA.import_key(aeskey_file.read())
 
-with open(".aeskey.json") as json_file:
-	data = json.load(json_file)
+
+if file_mode:
+	with open("cryptomat/.aeskey.json") as json_file:
+		data = json.load(json_file)
+else:
+	data = json.loads(sys.argv[1])
 
 #convert int list to bytes
 data = bytes(data)
@@ -22,6 +32,9 @@ enc_key_list = []
 for b in enc_key_bytes:
 	enc_key_list.append(int.from_bytes([b], byteorder='big', signed=False))
 
-#print(enc_key_list)
-with open(".aeskey_enc.json", 'w') as enc_file:
-	enc_file.write(json.dumps(enc_key_list))
+if file_mode:
+	#print(enc_key_list)
+	with open("cryptomat/.aeskey_enc.json", 'w') as enc_file:
+		enc_file.write(json.dumps(enc_key_list))
+else:
+	print(json.dumps(enc_key_list))

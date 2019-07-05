@@ -1,67 +1,32 @@
 import JSON
 using Sockets
-include("strings.jl")
 include("header.jl")
 
-function update_table_list()
-    let table_list
-        if !(isfile("data/table_list.json"))
-            table_list = Dict()
-        else
-            f = open("data/table_list.json", "r")
-            table_list = JSON.parse(read(f, String))
-            close(f)
-        end
-        for key in keys(table_list)
-            table = table_list[key]
-            #delete tables every 20 minutes
-            if round(Int64, time()) - table["created"] > 1200
-                delete!(table_list, key)
-            end
-        end
-        open("data/table_list.json", "w") do f
-            write(f, JSON.json(table_list))
-        end
-
-        return table_list
-    end
-end
-function get_table_list(p::Player)
-    let table_list
-        if !(isfile("data/table_list.json"))
-            table_list = Dict()
-        else
-            f = open("data/table_list.json", "r")
-            table_list = JSON.parse(read(f, String))
-            close(f)
-        end
-
-        for key in keys(table_list)
-            table = table_list[key]
-
-            if table["game"] != string(p.current_game) || table["minimum"] > p.balance
-                delete!(table_list, key)
-            end
-        end
-
-        return table_list
-    end
-end
+#global table_list
+table_list = Dict()
 
 function join_table(p::Player)
-    table_list = update_table_list()
-    visible_tables = get_table_list(p)
-    if size(collect(keys(visible_tables)),1) == 0
-        print_dict(p, "table_3")
-    else
-        print_dict(p, "table_1")
+    global table_list
+    let key_output
         key_output = ""
-        for key in keys(visible_tables)
-
-            key_output *= "$key\n"
+        for key in keys(table_list)
+            table = table_list[key]
+            if round(Int64, time()) - table["created"] > 1200
+                delete!(table_list, key)
+            elseif table["game"] != p.current_game || table["minimum"] > p.balance
+                continue
+            else
+                key_output *= "$key\n"
+            end
         end
-        write(p.socket, key_output)
+        if key_output == ""
+            print_dict(p, "table_3")
+        else
+            print_dict(p, "table_1")
+            write(p.socket, key_output)
+        end
     end
+
     while true
         print_dict(p, "table_2")
         s = readline(p.socket)
@@ -74,20 +39,22 @@ function join_table(p::Player)
             table = create_table(p)
             write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
             break
-        elseif haskey(visible_tables, s)
-            table = visible_tables[s]
-            write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
-            break
-        elseif haskey(table_list, s) && table_list[s]["game"] == string(p.current_game)
-            print_dict(p, "table_4")
+        elseif haskey(table_list, s) && table_list[s]["game"] == p.current_game
             table = table_list[s]
-            s = readline(p.socket)
-            if table["passphrase"] == s
+            if table["minimum"] <= p.balance
                 write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
-                break;
+                break
             else
-                print_dict(p, "table_5")
-                continue
+                print_dict(p, "table_4")
+                table = table_list[s]
+                s = readline(p.socket)
+                if table["passphrase"] == s
+                    write(p.socket, "You approach the $(p.current_game) table $(table["name"]). The dealer smiles at you and slightly nods his head as a greeting.\n")
+                    break;
+                else
+                    print_dict(p, "table_5")
+                    continue
+                end
             end
         else
             print_dict(p, "repeat")
@@ -98,7 +65,7 @@ function join_table(p::Player)
 end
 
 function create_table(p::Player)
-    table_list = update_table_list()
+    global table_list
 
     print_dict(p, "table_12")
     let key, name, minimum, passphrase
@@ -108,8 +75,12 @@ function create_table(p::Player)
                 print_dict(p, "table_13")
                 continue
             elseif haskey(table_list,key)
-                print_dict(p, "table_14")
-                continue
+                if round(Int64, time()) - table_list[key]["created"] <= 1200
+                    print_dict(p, "table_14")
+                    continue
+                else
+                    break
+                end
             else
                 break
             end
@@ -147,11 +118,8 @@ function create_table(p::Player)
             end
         end
 
-        table_list[key] = Dict("name" => name, "minimum" => minimum, "passphrase" => passphrase, "game" => p.current_game, "created" => round(Int64, time()))
+        global table_list[key] = Dict("name" => name, "minimum" => minimum, "passphrase" => passphrase, "game" => p.current_game, "created" => round(Int64, time()))
 
-        open("data/table_list.json", "w") do f
-            write(f, JSON.json(table_list))
-        end
         print_dict(p, "table_15")
         print_dict(p, "spacer")
 

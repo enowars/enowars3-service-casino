@@ -75,7 +75,7 @@ function searchCheese(p::Player)
         print_dict(p, "restaurant_cheese_fail")
     else
         print_dict(p, "restaurant_cheese")
-        f = open("data/.leaflet", "r")
+        f = open_file_try("data/.leaflet", "r")
         write(p.socket, "$(read(f, String))\n")
         close(f)
     end

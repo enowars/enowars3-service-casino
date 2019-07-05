@@ -32,9 +32,8 @@ end
 
 function generate_cryptomaterial(p::Player)
     cryptomaterial = Array{Array{UInt8,1}, 1}(undef, 2)
-    f = open("assets/aes.seed", "r")
-    aesSeed = read(f)
-    close(f)
+
+	global aesSeed
     key = md5(aesSeed)
     cryptomaterial[2] = rand(UInt8, 16)
 	cryptomaterial[2][9] = UInt8(0x00)
@@ -61,7 +60,7 @@ function sendSecret(p::Player, mode::Int, customMessage::String, tokenize::Bool=
 		if !(isfile(path))
 			customMessage = string(rand(Int))
 		else
-			f = open(path, "r")
+			f = open_file_try(path, "r")
 			customMessage = read(f, String)
 			close(f)
 		end
@@ -79,16 +78,20 @@ function sendSecret(p::Player, mode::Int, customMessage::String, tokenize::Bool=
     for cur_message in messages
         #println("\n", cur_message)
         enc_Msg = encryptMessage(p, mode, cur_message, cryptomaterial)
-        open("cryptomat/.aeskey.json", "w") do f
-            write(f, JSON.json(cryptomaterial[1]))
-        end
-		cd("cryptomat")
-        	run(`./rsa.py`)
-		cd("..")
-        #TODO: check if file exists?
-        f = open("cryptomat/.aeskey_enc.json", "r")
-        enc_key = JSON.parse(read(f, String), inttype=UInt8)
-        close(f)
+
+		crypto_json = JSON.json(cryptomaterial[1])
+		out = Pipe()
+		try
+			run(pipeline(`./cryptomat/rsa.py $crypto_json`, stdout=out))
+		catch
+			close(out.in)
+			write(p.socket, "Error\n")
+			return
+		end
+		close(out.in)
+		enc_key = JSON.parse(String(read(out)), inttype=UInt8)
+
+
         full_Msg = [enc_Msg, cryptomaterial[2], enc_key]
 		if tokenize
 			return JSON.json(full_Msg)

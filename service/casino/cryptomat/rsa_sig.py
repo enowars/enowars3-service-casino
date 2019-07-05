@@ -4,12 +4,21 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import pkcs1_15
 from Crypto.Hash import SHA256
 import json
+import sys
 
-with open("../assets/public.pem") as aeskey_file:
+file_mode = False
+
+if len(sys.argv) == 1:
+	file_mode = True
+
+with open("assets/public.pem") as aeskey_file:
 	key = RSA.import_key(aeskey_file.read())
 
-with open(".signature.json") as json_file:
-	data = json.load(json_file)
+if file_mode:
+	with open("cryptomat/.signature.json") as json_file:
+		data = json.load(json_file)
+else:
+	data = json.loads(sys.argv[1])
 
 #convert int list to bytes
 msg = data[0]
@@ -29,6 +38,13 @@ except (TypeError):
 except (ValueError):
 	answer = "-"
 
+if not file_mode:
+	if answer == "+":
+		exit()
+	else:
+		exit(1)
+
 #print(enc_key_list)
-with open(".signature.answer", 'w') as ans_file:
-	ans_file.write(answer)
+if len(sys.argv) == 1:
+	with open("cryptomat/.signature.answer", 'w') as ans_file:
+		ans_file.write(answer)

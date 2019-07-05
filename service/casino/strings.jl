@@ -2,10 +2,10 @@ import JSON
 using Sockets
 include("header.jl")
 
-dictionary = open("data/strings.json", "r") do f
-    s = read(f, String)
-    JSON.parse(s)
-end
+f = open_file_try("data/strings.json", "r")
+s = read(f, String)
+dictionary = JSON.parse(s)
+
 
 function print_dict(p, key)
     write(p.socket, "$(dictionary[key])\n")

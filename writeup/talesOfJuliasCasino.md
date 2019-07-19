@@ -33,14 +33,77 @@ Anyways, we merged the two ideas and ended up with a beginner-friendly text-baed
 
 
 
+## X. The vulnerabilities
+
+### Integer over-/underflow
+
+### AES OFB IV reuse
+
+The second vulnerability is a typical crypto vulnerability. The basic idea is that if the IV is reused for multiple messages in
+AES OFB mode(same goes for the CTR mode) AND you know the content of one plain text message you can decrpyt the other one.
+
+Under the hood in AES-OFB and -CTR a keystram is generated and XOR'd with the plaintext message. The sole purpose of the IV is to provide "randomness"
+to this key stream (Note that the IV always needs to be transmitted with the message). So if one reuses the IV, the keystream is also the same. Now one can appy the following:
+
+```
+Notation:
+A	- plain text of message A
+B	- plain text of message B
+A'	- encrypted message A
+B'	- encrypted message B
+K_A	- Keystream of A'
+K_B	_ Keysteam of B'
+
+We want:
+B
+
+We know:
+Plaintext A
+
+A' = A XOR K_A
+B' = B XOR K_B
+
+IV reuse => K_A = K_B; which is K from now on
+
+=>
+A' = A XOR K
+B' = B XOR K
+
+Due to the fact that we know A, we can calculate K:
+K = A' XOR A
+
+And then can calculate B from that:
+B = B' XOR K
+```
+
+One have to keep in mind the keysteam we extract only is as lon as A. That mean that the plaintext A needs to be at least as long as B so that is able to decrypt
+B completely. An examplary exploit can be found in in the `exploit` (flag_idx 1) function of `checker/checker.py`.
+The vuln itself happens due to that part of `service/casino/cryptomat/sender.jl`:
+
+```
+    cryptomaterial = generate_cryptomaterial(p::Player)
+
+    for cur_message in messages
+        #println("\n", cur_message)
+        enc_Msg = encryptMessage(p, mode, cur_message, cryptomaterial)
+
+	...
+
+    end
+```
+So this basically generates the cryptomaterial (cryptomaterial[1] is key, and [2] is IV #distraction) one time for all message. For the key this is fine but that means that all messages use the same IV. To patch
+this just change the IV between messages or generate the cryptomaterial every time new. Important to note is that an established crypto library like 
+pycrypto usually changes/increments the IV for you in between the messages. One reason to choose a new/niche programming language.
 
 
 
+## The Casino Royale with Cheese distraction
+TODO: CASINO Royale -> Hash; AES CBC IV reuse
 
 
 Outline:
 #Intro
- - what was our first intetntion
+ - what was our first intetntion | done
  - explenation of the service (including the distraction)
  - vulns
  - restaurant burger

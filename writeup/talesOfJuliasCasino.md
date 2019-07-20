@@ -31,6 +31,39 @@ obstacles and pitfalls in our way but we didn't expected such things...
 
 Anyways, we merged the two ideas and ended up with a beginner-friendly text-baed RPG service called Julias Casino.
 
+## 3. The service
+
+
+## 4. Writing the checker part 1 - Julia vs. Python Crypto Library & AES-CTR
+
+So every service needs a checker of course and in our case this was pretty straight forward... or at least we thought. It took some time
+to get used to the checker and the methods but all in all just as much as expected. Nevertheless the crypto part which should be uninformly
+implemented in Julia and in Python made some troubles.
+
+For Julia we used the only AES library/git repo we found (https://github.com/faf0/AES.jl). Apparently Julia and Crypto Libraries doesn't seem to
+be best friends and if one finds one most often they are just calls of C libaries (which is totally fine). During the development
+of the service we already needed to port the library from Julia 0.6 to Julia 1.0 and made an according pull request.
+Those were just some minor fixes but hey, we contributed to an open source project (of course not completely altruistic).
+But during the implementation of the checker which is written in Python and uses the pycrypto library something was weird because
+the checker (Python) couldn't decrypt the service (Julia) messages accordingly. First let's have a look at the messages again:
+
+Our messages consists out of the following informations:
+* Message(sometimes Flag) itself encrypted via AES-CTR and AES-Key
+* The Initialization Vector (IV)
+* The AES-Key encrypted via RSA
+
+So the idea is the AES-Key is encrypted via RSA in a way that only the checker can decrypt it (... in a reasonable amount of time ;) ).
+So the checker decrypts the AES-Key and uses it with the IV to decrypt the message itself. But at this point AES-CTR was still used
+and the IV in AES-CTR definition is a little bit more complicated than usual. Therefore I briefly have to give some background
+informations.
+
+
+#TODO: AES-CTR counter explenation
+#TODO: Picture
+
+## 5. netcat & Julia - Test-CTF
+
+6 to 8 weeks before the Final CTF a test CTF was scheduled. At this points we had implemented both vulnerabilities and
 
 
 ## X. The vulnerabilities

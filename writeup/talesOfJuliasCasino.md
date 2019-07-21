@@ -3,31 +3,17 @@
 
 ## 1. Introduction
 
-This is a writeup of the service Julias Casino from the CTF ENOWARS3. Julias Casino was a text-based RPG and was created by
-two students from the TU Berlin. All in all the service had two vulnerability. The first vulnerability was an integer over-/underflow
-and the second one an IV reuse in AES-OFB. In this writeup we will describe the vulnerabilities but will also tell some stories around
-the creation of the service.
+This is a writeup of the service Julias Casino from the CTF ENOWARS3. Julias Casino was a text-based RPG and was created by two students from the TU Berlin. All in all the service had two vulnerabilities. The first vulnerability was an integer over-/underflow and the second one an IV reuse in AES-OFB. In this writeup we will describe the vulnerabilities but will also tell some stories around the creation of the service.
 
-At first we will give a brief inside of our intention and how we came up with the idea. Afterwars...
+At first we will give a brief inside of our intention and how we came up with the idea. Afterwards we will go into more detail about the two vulnerabilities.
 #TODO: Intro entsprechend des Ablaufs anpassen
 
 
 ## 2. The Idea
 
-The idea originated from two perspectives.
-The first one was to create a beginner-friendly service. After one of us played his first CTF during the preparation and thought
-that a service could be nice where a beginner just can try things and really "play" something, the idea of a casino came up. 
-#TODO: hanno perspective
+The idea originated from two perspectives. The first one was to create a beginner-friendly service. After one of us played his first CTF during the preparation and thought that a service could be nice where a beginner could just try things and really "play" something, the idea of a casino came up. With a text-based RPG we could also highlight the dark and apocalyptic theme that we chose for ENOWARS3. As you leave the dark and greyish world where there are people on the verge of dying and heaps of foul-smelling heaps of trash, you enter Julias Casino a world of wonders, flashing lights and well-behaved concierges.
 
-
-On the other side, after reimplementing the WiFi KRACK vulnerability in the previous semester
-the other one of us had the idea to use a part of KRACK as a service vulnerability, namely the AES-CTR IV reuse. But nowadays in
-most established programming languages (and preferably more high-level ones) the crypto-libraries makes it not easy
-for one to reuse the IV in the according AES modes. And even if one did, it felt kind of obvious during experimenting.
-Therefore this was the perfect moment  to try a new programming language. After some research for some new and promising language and
-a language with a AES library, we ended up with Julia. Julia just reached 1.0 in October 2018 and we thought this was the perfect
-moment to test the language. Additionally Julia is kind of easy to learn and to read. Nevertheless we knew that there would be
-obstacles and pitfalls in our way but we didn't expected such things... 
+On the other side, after reimplementing the WiFi KRACK vulnerability in the previous semester the other one of us had the idea to use a part of KRACK as a service vulnerability, namely the AES-CTR IV reuse. But nowadays in most established programming languages (and preferably more high-level ones) the crypto-libraries makes it not easy for one to reuse the IV in the according AES modes. And even if one did, it felt kind of obvious during experimenting. Therefore this was the perfect moment  to try a new programming language. After some research for some new and promising language and a language with a AES library, we ended up with Julia. Julia just reached 1.0 in October 2018 and we thought this was the perfect moment to test the language. Additionally Julia is kind of easy to learn and to read. Nevertheless we knew that there would be obstacles and pitfalls in our way but we didn't expected such things... 
 
 Anyways, we merged the two ideas and ended up with a beginner-friendly text-baed RPG service called Julias Casino.
 
@@ -69,6 +55,27 @@ informations.
 ## X. The vulnerabilities
 
 ### Integer over-/underflow
+The first vulnerability was to have some kind of way to get a lot of money in an illegal fashion. As we are playing in a corrupt world the heart of the casino should also be rotten even if the concierges treat you very kindly. The idea was to have tables that only show up if you have enough money thus we could distribute flags in these tables and only have them show for people with huge piles of cash.
+To reach these heights of opulence there are two different ways. One is to play games and to constantly continue winning but the chances of this happening are quite low. Though people who know a little bit about roulette could have probably programmed a bot that would win in the long term since the game was missing the 0. The other way was the integer over-/underflow vulnerability:
+As you enter the casino you soon realise that you can withdraw chips from an unexhaustable account but that the maximum amount of money you can get is capped at 10000 chips and that you can't withdraw a negative amount.
+```
+amount = tryparse(Int64, s)
+if amount == nothing || amount <= 0
+    print_dict(p, "withdraw_1")
+    return
+end
+
+p.balance += amount
+
+if p.balance > 10000
+    print_dict(p, "withdraw_2")
+    p.balance = 10000
+end
+```
+If you look closely you see that the amount is first added to the balance and then it is verified that the new balance is not above 10000. The trick for the first overflow is to already have some amount of chips (for example 1) and then ask for Int64.MaxValue (9223372036854775807). By doing this you get the Int64.MinValue (-9223372036854775808) since Julia uses an intended integer wrap-around.
+You soon realise that negative amounts of money won't help you in any way in a casino. That is where the second wrap-around (underflow) comes into play. If we could just lose another chip we would wrap-around again and reach Int64.MaxValue which would allow us to see any table in the casino. Since withdrawing chips prohibits you from withdrawing a negative amount you need to find a game where you can lose money without having any. The only intended situation where this can happen is when you play at the _slot\_machine_. When you try playing at the _slot\_machine_ for 5 chips but don't have that amount some weird slightly off looking and stinking person comes to you and belittles for not even having enough chips to play with at the _slot\_machine_. He 'helps' you out by grabbing one of your none existing chips and allows you to play for 1 chip. If you lose (which has a chance of 9/10) your balance is again decremented and you again wrap-around to Int64.MaxValue.
+
+The vulnerability is not too difficult once you find it but it forces you to either explore the casino or the code and does not really need any need prior knowledge or experience. 
 
 ### AES OFB IV reuse
 

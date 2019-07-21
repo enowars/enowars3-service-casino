@@ -3,7 +3,7 @@
 
 ## 1. Introduction
 
-This is a writeup of the service Julias Casino from the CTF ENOWARS3. Julias Casino was a text-based RPG and was created by two students from the TU Berlin. All in all the service had two vulnerabilities. The first vulnerability was an integer over-/underflow and the second one an IV reuse in AES-OFB. In this writeup we will describe the vulnerabilities but will also tell some stories around the creation of the service.
+This is a writeup of the service Julias Casino from the CTF ENOWARS3 (https://github.com/enowars/enowars3-service-casino). Julias Casino was a text-based RPG and was created by two students from the TU Berlin. All in all the service had two vulnerabilities. The first vulnerability was an integer over-/underflow and the second one an IV reuse in AES-OFB. In this writeup we will describe the vulnerabilities but will also tell some stories around the creation of the service.
 
 At first we will give a brief inside of our intention and how we came up with the idea. Afterwards we will go into more detail about the two vulnerabilities.
 #TODO: Intro entsprechend des Ablaufs anpassen
@@ -17,8 +17,45 @@ On the other side, after reimplementing the WiFi KRACK vulnerability in the prev
 
 Anyways, we merged the two ideas and ended up with a beginner-friendly text-baed RPG service called Julias Casino.
 
-## 3. The service
+## 3. Service & Cryptomat
 
+So the service is relatively simple. When you start the game you come to the receptionist. There you can withdraw money but only a maximum of 10000
+at once. To make the the withdrawment of money a little bit more complex in context of automation, we implemented a small captcha.
+From the reception you can either go the one of our games(Blackjack, Slot Machine or Roulette), go to the restaurant or go to the bathroom.
+The restaurant itself is mostly for content but you can get a Casino Royale with Cheese(Pulp Fiction Reference) via a special way which is explained
+in the distraction section.
+The bathroom by itself is not import but it's the only way to reach the cryptomat. The cryptomat is the core of the crpyto vulnerability and the
+distraction.
+
+By itself the cryptomat is quite simple as you can see in the menu:
+
+```
+Welcome to the Cryptomat!\n\nChoose your mode:
+    [1] Feedbackphobia Mode
+    [2] Super Safe Mode (out of order)
+    [3] Feebackmania Mode
+    [u] Upload message
+    [c] Clear message
+    [o] OS update
+    [g] Generate Token
+    [p] Print this message
+    [l] Leave\n
+```
+
+The basic idea was that the flagbot stores the flag via RSA and the `OS update` function and via the different mode you will get the
+flag in different AES modes (AES-CBC & AES-OFB). But the crpytomat puts a certain plaintext message before and behind the flag and
+also has a IV reuse. Therefor one can decrypt the AES-OFB flag which is decribed in the vulnerability.
+
+Nevertheless during the development we noticed that we need to be able to retrieve the flags from previous round. Therefore we implemented
+the concept of dimensions. A dimension is basically just a random number that is set when someone connects to the service. And when the flagbot
+uploads a flag, it uploads the flag to a certain "dimension". Each time a flag is uploaded the according dimension will be saved onto a note,
+which can be found under the crpytomat.
+So basically someone has to first read the note, then set the dimension, then let the cryptomat encrypt the flag. Otherwise the cryptomat
+will just encrypt string of a random integer.
+
+This all is sufficient for the vulnerability and the possibility of retrieving flags from previous round. Extra functionalities for the distraction
+part are the ability to upload a message, so the message gets encrypted instead of the flag/random string, and to generate tokens. But this
+will be explained in the distraction part more precisely.
 
 ## 4. Writing the checker part 1 - Julia vs. Python Crypto Library & AES-CTR
 
@@ -145,17 +182,16 @@ Outline:
 #Intro
  - what was our first intetntion | done
  - explenation of the service (including the distraction)
- - vulns
+ - vulns | done
  - restaurant burger
  - open source contribution
- - python cryptodome AES-CTR vs julia AES lib
+ - python cryptodome AES-CTR vs julia AES lib | WIP
  - mysterious file not found in docker
  - multi threaded tcp server story
  - why string.json?
- - RSA encryption
- - dimensions
- - cryptomaterial
- - scopes
+ - RSA encryption | done
+ - dimensions | done
+ - cryptomaterial | done
 #future ideas?
- - module, \, \div symbols
+ - module, \, \div symbols, scopes
 

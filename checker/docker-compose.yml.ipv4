@@ -1,0 +1,12 @@
+  
+version: '3.6'
+services:
+  casino-backend:
+    build: .
+    volumes:
+      - .:/checker
+    ports:
+      - 8002:3031
+configs:
+  nginx_config:
+    file: ./nginx.conf

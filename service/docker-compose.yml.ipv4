@@ -1,0 +1,9 @@
+version: '3'
+
+services:
+  julias_casino:
+    build: .
+    ports:
+      - "8002:6969"
+    volumes:
+      - ./data_persistent:/app/casino/data

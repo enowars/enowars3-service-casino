@@ -1,0 +1,49 @@
+version: '3.6'
+services:
+  casino-backend:
+    build: .
+    image: dockerreg.enowars.com:5000/casino-backend
+    networks:
+     - bridge
+     - enoverlay
+    environment:
+     - MONGO_ENABLED=1
+     - MONGO_HOST=casino-db
+     - MONGO_PORT=27017
+     - MONGO_USER=ipv6islove
+     - MONGO_PASSWORD=dockerislove
+
+
+    deploy:
+      replicas: 3
+      labels:
+        - "traefik.enable=true"
+        - "traefik.backend=casino-checker"
+        - "traefik.docker.network=enoverlay"
+        - "traefik.frontend.rule=Host:casino.checker.enowars.com,service12.checker.enowars.com,420.checker.enowars.com"
+        - "traefik.port=3031"
+  casino-db:
+    image: mongo
+    networks:
+      - enoverlay
+    volumes:
+      - casino_db_data:/data/db
+#we need to fix the node otherwise the volumes are lost after migration :/
+    deploy:
+      replicas: 1
+      placement:
+        constraints:
+          - "node.hostname==blade5"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ipv6islove
+      MONGO_INITDB_ROOT_PASSWORD: dockerislove
+
+
+networks:
+  bridge:
+    external: true
+  enoverlay:
+    external: true
+volumes:
+  casino_db_data:
+

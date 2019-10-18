@@ -1,4 +1,4 @@
-FROM python
+FROM python:3.7
 LABEL maintainer="ENOFLAG <mail@enoflag.de>"
 
 # Install python3 and uswgi

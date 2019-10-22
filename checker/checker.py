@@ -25,8 +25,6 @@ def bytes_arr_to_int_arr(bytes_arr):
     return result
 
 
-
-
 def generate_random_string(length = 3):
     alphabet = string.ascii_letters + string.digits
     return ''.join(random.choice(alphabet) for i in range(length))
@@ -545,7 +543,7 @@ class CasinoChecker(BaseChecker):
     def add_to_balance(self, x):
         self.balance = int64(self.balance + x).value
 
-    port = 6969  # default port to send requests to.
+    port = 8002  # default port to send requests to.
 
     def putflag(self):
         try:

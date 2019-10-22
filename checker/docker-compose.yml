@@ -5,7 +5,16 @@ services:
     build: .
     ports:
       - 8002:3031
-
-configs:
-  nginx_config:
-    file: ./nginx.conf
+    environment:
+     - MONGO_ENABLED=1
+     - MONGO_HOST=casino-db
+     - MONGO_PORT=27017
+     - MONGO_USER=ipv6islove
+     - MONGO_PASSWORD=dockerislove
+  casino-db:
+    image: mongo
+    volumes:
+      - ./casino_db_data:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ipv6islove
+      MONGO_INITDB_ROOT_PASSWORD: dockerislove

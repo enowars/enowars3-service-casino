@@ -25,6 +25,8 @@ def bytes_arr_to_int_arr(bytes_arr):
     return result
 
 
+
+
 def generate_random_string(length = 3):
     alphabet = string.ascii_letters + string.digits
     return ''.join(random.choice(alphabet) for i in range(length))
@@ -118,23 +120,37 @@ class CasinoChecker(BaseChecker):
             except Exception as e:
                 self.debug(e)
                 raise BrokenServiceException("Notes Error")
-        #set dimension
+
+        if difference == 2:
+            #try to get the correct flag
+            if self.bugprevention(t, mode, dimension, return_result=True):
+                return True
+            else:
+                self.bugprevention(t, mode, notes[difference-1])
+
+            #try to get the flag from one note place before because bennis checker doesnt strictly schedule putflag before getflag
+
+        else:
+            self.bugprevention(t, mode, dimension)
+
+    def bugprevention(self, t, mode, dimension, return_result=False):
+        # set dimension
         t.write("🕐\n".encode("utf-8"))
         self.debug("Setting dimension: " + str(dimension))
-        t.write(str(dimension)+"\n")
+        t.write(str(dimension) + "\n")
 
         self.debug("Dimension set(?). Starting AES-" + mode)
-        if(mode == "OFB"):
+        if (mode == "OFB"):
             mode_nr = "3"
-        elif(mode == "CBC"):
+        elif (mode == "CBC"):
             mode_nr = "1"
-        t.write(mode_nr+"\n")
+        t.write(mode_nr + "\n")
 
         self.readline_expect_multiline(t, string_dictionary["cryptomat_sender_1"])
         self.debug("Starting to work on AES messages")
-        for i in range(0,3):
+        for i in range(0, 3):
             self.debug("AES message Nr: " + str(i))
-            #self.readline_expect_multiline(t, "AES CTR:")
+            # self.readline_expect_multiline(t, "AES CTR:")
             self.readline_expect_multiline(t, "Message:")
             self.debug("Starting to read AES message")
             msg = t.read_until("\n")[:-1].decode('utf-8')
@@ -147,12 +163,18 @@ class CasinoChecker(BaseChecker):
                 raise BrokenServiceException("decrypting of message failed")
                 print("Decrypted message: ", decrypted_msg)
             if i == 0:
-                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
+                assert_equals(decrypted_msg, "ATOM:-:BOMB:-:CODE:-:START::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL",
+                              autobyteify=True)
             elif i == 1:
-                assert_equals(decrypted_msg , self.flag, autobyteify=True)
+                if return_result:
+                    if ensure_bytes(decrypted_msg) != ensure_bytes(self.flag):
+                        return False
+                else:
+                    assert_equals(decrypted_msg, self.flag, autobyteify=True)
             elif i == 2:
-                assert_equals(decrypted_msg , "ATOM:-:BOMB:-:CODE:-:END::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL", autobyteify=True)
-
+                assert_equals(decrypted_msg, "ATOM:-:BOMB:-:CODE:-:END::SUPER:-:SAFE:-:CRYPTOMAT:-:PROTOCOL",
+                              autobyteify=True)
+        return True
 
     def decrypt_aes(self, key, iv, enc_msg, mode):
         #aesSuite = AES.new(key, AES.MODE_CTR, nonce=iv[:8], initial_value=iv[8:])
@@ -543,7 +565,7 @@ class CasinoChecker(BaseChecker):
     def add_to_balance(self, x):
         self.balance = int64(self.balance + x).value
 
-    port = 8002  # default port to send requests to.
+    port = 6969  # default port to send requests to.
 
     def putflag(self):
         try:
@@ -981,3 +1003,4 @@ with open('assets/strings.json', 'r') as f:
 app = CasinoChecker.service
 if __name__ == "__main__":
     run(CasinoChecker)
+

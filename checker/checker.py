@@ -39,9 +39,9 @@ def xorRange(src1, src2, dst, size):
 
 class CasinoChecker(BaseChecker):
     debug_print = True
-    flag_count = 2
-    noise_count = 1
-    havoc_count = 2
+    flag_variants = 2
+    noise_variants = 1
+    havoc_variants = 2
 
     balance = 0
 
@@ -112,7 +112,7 @@ class CasinoChecker(BaseChecker):
                 self.debug("Notes successfully loaded as JSON")
                 #TODO: adjust to round
 
-                difference = self.round - self.flag_round
+                difference = self.current_round_id - self.related_round_id
                 self.debug("Difference between roung and flag_round is:" + str(difference))
 
                 dimension = notes[difference]
@@ -307,7 +307,7 @@ class CasinoChecker(BaseChecker):
         except Exception as e:
             self.debug("something went wrong while trying to read the captcha..")
             self.debug("%s" %(e))
-            raise BrokenServiceException("withdraw_chips - Exception catched; Flag ID: " + str(self.flag_idx))
+            raise BrokenServiceException("withdraw_chips - Exception catched; Flag ID: " + str(self.variant_id))
 
         self.debug("\n%s" %(captcha))
         self.debug("calculating captcha")
@@ -577,7 +577,7 @@ class CasinoChecker(BaseChecker):
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 #table-flag
 
                 #change to games
@@ -591,16 +591,16 @@ class CasinoChecker(BaseChecker):
                 #create a new table
                 self.insert_table_flag(t)
 
-            elif self.flag_idx == 1:
+            elif self.variant_id == 1:
                 self.put_crypto(t, mode="OFB")
             #TODO: better leaving
             #print(self.flag_round)
             self.debug("Putflag success before closing")
             t.close()
         except Exception as e:
-            self.debug("putflag - Exception catched; Flag ID: " + str(self.flag_idx))
+            self.debug("putflag - Exception catched; Flag ID: " + str(self.variant_id))
             self.debug(e)
-            raise BrokenServiceException("putflag did not work; Flag ID: " + str(self.flag_idx))
+            raise BrokenServiceException("putflag did not work; Flag ID: " + str(self.variant_id))
 
     def getflag(self):
         try:
@@ -612,7 +612,7 @@ class CasinoChecker(BaseChecker):
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 #change to games
                 self.goto_games(t)
 
@@ -652,15 +652,15 @@ class CasinoChecker(BaseChecker):
                 self.readline_expect_multiline(t, string_dictionary["exit"])
 
 
-            elif self.flag_idx == 1:
+            elif self.variant_id == 1:
                 self.get_crypto(t, "OFB")
             #todo: better leaving
             self.debug("Getflag success before closing")
             t.close()
         except Exception as e:
-            self.debug("getflag - Exception catched; Flag ID: " + str(self.flag_idx))
+            self.debug("getflag - Exception catched; Flag ID: " + str(self.variant_id))
             self.debug(e)
-            raise BrokenServiceException("getflag did not work; Flag ID: " + str(self.flag_idx))
+            raise BrokenServiceException("getflag did not work; Flag ID: " + str(self.variant_id))
 
     def exploit(self):
         try:
@@ -671,7 +671,7 @@ class CasinoChecker(BaseChecker):
         try:
             self.debug("connected to {}".format(self.address))
             self.intro(t)
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 self.debug("exploit - withdrawing 1 chip")
                 self.withdraw_chips(t,1)
                 self.debug("exploit - withdrawing 9223372036854775807")
@@ -722,7 +722,7 @@ class CasinoChecker(BaseChecker):
                 self.readline_expect_multiline(t, string_dictionary["reception_0"])
                 self.debug("exploit - successfully managed to get %d" %(self.balance))
 
-            elif self.flag_idx == 1:
+            elif self.variant_id == 1:
                 self.goto_cryptomat(t)
                 #get note
                 t.write("◈\n".encode("utf-8"))
@@ -736,7 +736,7 @@ class CasinoChecker(BaseChecker):
                     self.debug("Notes successfully loaded as JSON")
                     #TODO: adjust to round
 
-                    difference = self.round - self.flag_round
+                    difference = self.current_round_id - self.related_round_id
                     self.debug("Difference between roung and flag_round is:" + str(difference))
                     dimension = notes[difference]
                     self.debug("Flag dimension: " + str(dimension))
@@ -818,14 +818,14 @@ class CasinoChecker(BaseChecker):
         try:
             self.debug("connected to {}".format(self.address))
             self.intro(t)
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 self.put_crypto(t, "CBC")
             self.debug("Putnoise success before closing")
             t.close()
         except Exception as e:
-            self.debug("putnoise - Exception catched; Noise ID: " + str(self.flag_idx))
+            self.debug("putnoise - Exception catched; Noise ID: " + str(self.variant_id))
             self.debug(e)
-            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
+            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.variant_id))
 
     def getnoise(self):
         try:
@@ -837,21 +837,21 @@ class CasinoChecker(BaseChecker):
             self.debug("connected to {}".format(self.address))
             self.intro(t)
 
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 self.get_crypto(t, "CBC")
             self.debug("Getnoise success before closing")
             t.close()
         except Exception as e:
-            self.debug("getnoise - Exception catched; Noise ID: " + str(self.flag_idx))
-            self.debug(e)
-            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.flag_idx))
+            self.debug("getnoise - Exception catched; Noise ID: " + str(self.variant_id))
+            self.debug(e)  
+            raise BrokenServiceException("getnoise did not work; Noise ID: " + str(self.variant_id))
 
 
     def havoc(self):
         try:
             t = self.connect()
         except Exception as e:
-            self.debug("havoc - Exception catched while connecting to the service; Havoc ID: " + str(self.flag_idx))
+            self.debug("havoc - Exception catched while connecting to the service; Havoc ID: " + str(self.variant_id))
             self.debug(e)
             raise(e)
         try:
@@ -859,7 +859,7 @@ class CasinoChecker(BaseChecker):
 
             self.intro(t)
 
-            if self.flag_idx == 0:
+            if self.variant_id == 0:
                 #randomly choose between playing a game (and withdrawing money), going to the bathroom or to the restaurant
                 c = random.choices(population=['b', 'w', 'r'], weights=[0, 1, 0])[0]
 
@@ -896,7 +896,7 @@ class CasinoChecker(BaseChecker):
                 else:
                     self.readline_expect_multiline(t, string_dictionary["exit"])
 
-            if self.flag_idx == 1:
+            if self.variant_id == 1:
                 t.write("r\n")
                 self.readline_expect_multiline(t, string_dictionary["restaurant_intro"])
                 t.write("🧀\n".encode("utf-8"))
@@ -992,9 +992,9 @@ class CasinoChecker(BaseChecker):
             t.close()
 
         except Exception as e:
-            self.debug("havoc - Exception catched; Havoc ID: " + str(self.flag_idx))
+            self.debug("havoc - Exception catched; Havoc ID: " + str(self.variant_id))
             self.debug(e)
-            raise BrokenServiceException("havoc did not work; Havoc ID: " + str(self.flag_idx))
+            raise BrokenServiceException("havoc did not work; Havoc ID: " + str(self.variant_id))
 
 
 with open('assets/strings.json', 'r') as f:
